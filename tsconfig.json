@@ -6,16 +6,36 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
+    "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@core/*": ["src/core/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@modelcontextprotocol/sdk/server/mcp.js": [
+        "node_modules/@modelcontextprotocol/sdk/dist/cjs/server/mcp"
+      ],
+      "@modelcontextprotocol/sdk/server/streamableHttp.js": [
+        "node_modules/@modelcontextprotocol/sdk/dist/cjs/server/streamableHttp"
+      ],
+      "@modelcontextprotocol/sdk/types.js": [
+        "node_modules/@modelcontextprotocol/sdk/dist/cjs/types"
+      ],
+      "@sisques-labs/nestjs-kit/graphql": [
+        "node_modules/@sisques-labs/nestjs-kit/dist/entrypoints/graphql"
+      ],
+      "@sisques-labs/nestjs-kit/typeorm": [
+        "node_modules/@sisques-labs/nestjs-kit/dist/entrypoints/typeorm"
+      ]
+    }
   }
 }
