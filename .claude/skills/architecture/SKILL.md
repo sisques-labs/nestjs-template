@@ -76,7 +76,7 @@ src/contexts/{context}/
 │   │   ├── {name}.controller.ts
 │   │   └── dtos/          {name}.dto.ts
 │   └── mcp/
-│       ├── tools/         {name}.tool.ts             — {Name}McpTool implements IMcpTool (@core/mcp)
+│       ├── tools/         {name}.tool.ts             — {Name}McpTool implements IMcpTool (@sisques-labs/nestjs-kit/mcp)
 │       └── schemas/       {name}.schema.ts            — Zod inputSchema for the tool above
 └── {context}.module.ts
 ```

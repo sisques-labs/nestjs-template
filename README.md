@@ -43,7 +43,7 @@ every subsequent one follows (see the `architecture` skill in
 | Kafka event forwarding | `src/core/messaging/` | Opt-in (`KAFKA_ENABLED`), auto-generated aggregate→topic map, no-op when disabled |
 | Prometheus metrics | `src/core/metrics/` | `GET /api/metrics`, HTTP (REST+GraphQL) + CQRS instrumentation |
 | Sentry | `src/core/observability/` | Disabled until `SENTRY_DSN` is set |
-| MCP (Model Context Protocol) | `src/core/mcp/` | `POST /api/mcp`, per-request server, tool auto-discovery |
+| MCP (Model Context Protocol) | `@sisques-labs/nestjs-kit/mcp` (wired in `src/app.module.ts`) | `POST /api/mcp`, per-request server, tool auto-discovery |
 | REST + GraphQL | `src/main.ts`, `src/app.module.ts` | Swagger at `/docs`, Apollo GraphQL at `/graphql` (drop whichever transport you don't need) |
 | Database | `src/database/`, TypeORM | Postgres only; migrations in `src/database/migrations/` |
 | CI/CD | `.github/workflows/` | `ci.yml` (lint+test+build+e2e+integration), `docker.yml` (PR smoke build), `release.yml` / `release-train.yml` (via `sisques-labs/workflows`) |
@@ -55,9 +55,10 @@ These are common enough that they shouldn't be baked into every service, but
 specific enough that they'd bias the template toward one shape:
 
 - **Auth** (JWT/OAuth/sessions) and **multi-tenancy** — add what your service
-  actually needs; `src/core/mcp/domain/interfaces/mcp-tool-context.interface.ts`
-  and `src/core/filters/base-exception.filter.ts` both have a documented
-  extension point for when you do.
+  actually needs; the MCP module's `contextBuilder` option (see
+  `McpModule.forRoot(...)` in `src/app.module.ts`, and `IMcpContextBuilder`
+  from `@sisques-labs/nestjs-kit/mcp`) and `src/core/filters/base-exception.filter.ts`
+  both have a documented extension point for when you do.
 - **Bounded contexts / business domain** — this is infrastructure only.
 - **MongoDB** — `@sisques-labs/nestjs-kit/mongodb` is available if a service
   needs it alongside or instead of Postgres.
