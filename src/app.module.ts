@@ -3,9 +3,8 @@ import { validateEnv } from '@core/config/env.validation';
 import { kafkaConfig } from '@core/config/kafka.config';
 import { postgresConfig } from '@core/config/postgres.config';
 import { sentryConfig } from '@core/config/sentry.config';
+import { AGGREGATE_MODULE_MAP } from '@core/messaging/domain/topics/aggregate-module.map.generated';
 import { HealthModule } from '@core/health/health.module';
-import { MessagingModule } from '@core/messaging/messaging.module';
-import { MetricsModule } from '@core/metrics/metrics.module';
 import { ObservabilityModule } from '@core/observability/observability.module';
 import { PingResolver } from '@core/transport/graphql/resolvers/ping.resolver';
 import '@core/transport/graphql/registered-enums.graphql';
@@ -17,6 +16,8 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SharedGraphQLModule } from '@sisques-labs/nestjs-kit/graphql';
 import { McpModule } from '@sisques-labs/nestjs-kit/mcp';
+import { MessagingModule } from '@sisques-labs/nestjs-kit/messaging';
+import { MetricsModule } from '@sisques-labs/nestjs-kit/metrics';
 import { SupportModule } from './support/support.module';
 
 @Module({
@@ -47,8 +48,8 @@ import { SupportModule } from './support/support.module';
       }),
     }),
     ObservabilityModule,
-    MetricsModule,
-    MessagingModule,
+    MetricsModule.forRoot({ appLabel: 'nestjs-template' }),
+    MessagingModule.forRoot({ aggregateModuleMap: AGGREGATE_MODULE_MAP }),
     HealthModule,
     // No auth yet, so the default context builder (`{ requestId }`) is used —
     // pass `contextBuilder` here once this service resolves an identity.

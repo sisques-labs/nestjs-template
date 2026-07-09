@@ -40,8 +40,8 @@ every subsequent one follows (see the `architecture` skill in
 | Config + env validation | `src/core/config/` | Zod-validated env vars, CORS origin resolution |
 | Health checks | `src/core/health/` | `GET /api/health/live` (liveness), `GET /api/health/ready` (DB ping via `@nestjs/terminus`) |
 | Logging | `src/support/logging/` | Winston via `@sisques-labs/nestjs-kit`, JSON file + console transports |
-| Kafka event forwarding | `src/core/messaging/` | Opt-in (`KAFKA_ENABLED`), auto-generated aggregate→topic map, no-op when disabled |
-| Prometheus metrics | `src/core/metrics/` | `GET /api/metrics`, HTTP (REST+GraphQL) + CQRS instrumentation |
+| Kafka event forwarding | `@sisques-labs/nestjs-kit/messaging` (wired in `src/app.module.ts`); `src/core/messaging/` keeps only the app-local, auto-generated aggregate→topic map | Opt-in (`KAFKA_ENABLED`), no-op when disabled |
+| Prometheus metrics | `@sisques-labs/nestjs-kit/metrics` (wired in `src/app.module.ts`) | `GET /api/metrics`, HTTP (REST+GraphQL) + CQRS instrumentation |
 | Sentry | `src/core/observability/` | Disabled until `SENTRY_DSN` is set |
 | MCP (Model Context Protocol) | `@sisques-labs/nestjs-kit/mcp` (wired in `src/app.module.ts`) | `POST /api/mcp`, per-request server, tool auto-discovery |
 | REST + GraphQL | `src/main.ts`, `src/app.module.ts` | Swagger at `/docs`, Apollo GraphQL at `/graphql` (drop whichever transport you don't need) |

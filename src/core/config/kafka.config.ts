@@ -1,4 +1,9 @@
 import { registerAs } from '@nestjs/config';
+import {
+  IKafkaConfig,
+  IKafkaSaslConfig,
+  KafkaSaslMechanism,
+} from '@sisques-labs/nestjs-kit/messaging';
 
 /**
  * Kafka configuration for the domain-event forwarder.
@@ -7,24 +12,6 @@ import { registerAs } from '@nestjs/config';
  * in local/dev/test. When disabled, `MessagingModule` registers a no-op publisher
  * and never opens a connection.
  */
-export type KafkaSaslMechanism = 'plain' | 'scram-sha-256' | 'scram-sha-512';
-
-export interface IKafkaSaslConfig {
-  mechanism: KafkaSaslMechanism;
-  username: string;
-  password: string;
-}
-
-export interface IKafkaConfig {
-  enabled: boolean;
-  clientId: string;
-  brokers: string[];
-  /** Topic prefix — topics are `${topicPrefix}.${module}` (e.g. `nestjs-template.plants`). */
-  topicPrefix: string;
-  ssl: boolean;
-  sasl: IKafkaSaslConfig | null;
-}
-
 function parseBrokers(raw: string | undefined): string[] {
   return (raw ?? '')
     .split(',')

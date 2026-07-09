@@ -159,9 +159,11 @@ and `filter.field` interpolated straight into SQL with zero validation.
 
 ## References
 
-- `src/core/README.md` (add one, mirroring `src/core/messaging/README.md` and
-  `src/core/metrics/README.md`, as new cross-cutting modules are added) —
-  cross-cutting concerns
+- `src/core/README.md` (add one, mirroring `src/core/health/` and
+  `src/core/observability/`, as new cross-cutting modules are added) —
+  cross-cutting concerns. Kafka event forwarding and Prometheus metrics live
+  in `@sisques-labs/nestjs-kit/messaging` and `/metrics` — see that package's
+  docs, not a local README.
 - `.claude/skills/architecture/assets/aggregate-template.ts.template` — aggregate starter
 - Once the first bounded context exists, add its `README.md` at
   `src/contexts/{context}/README.md` and reference it here as the canonical

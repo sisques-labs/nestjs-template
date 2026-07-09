@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 
-import { AGGREGATE_MODULE_MAP } from '@core/messaging/domain/topics/aggregate-module.map';
+import { AGGREGATE_MODULE_MAP } from '@core/messaging/domain/topics/aggregate-module.map.generated';
 import {
   OUTPUT_PATH,
   collectMappings,
