@@ -29,8 +29,9 @@ every subsequent one follows (see the `architecture` skill in
    and this README.
 3. Copy `.env.example` to `.env` and fill in real values.
 4. `pnpm test:db:up` to start a local Postgres, then `pnpm dev`.
-5. Add your first bounded context under `src/contexts/` — invoke the
-   `architecture` skill (or read `.claude/skills/architecture/SKILL.md`
+5. Add your first bounded context under `src/contexts/` and register its
+   module in `CONTEXT_MODULES` in `src/contexts/contexts.module.ts` — invoke
+   the `architecture` skill (or read `.claude/skills/architecture/SKILL.md`
    directly) for the DDD+CQRS+Hexagonal layer rules and file naming.
 
 ## What's included
@@ -40,11 +41,11 @@ every subsequent one follows (see the `architecture` skill in
 | Config + env validation | `src/core/config/` | Zod-validated env vars, CORS origin resolution |
 | Health checks | `src/core/health/` | `GET /api/health/live` (liveness), `GET /api/health/ready` (DB ping via `@nestjs/terminus`) |
 | Logging | `src/support/logging/` | Winston via `@sisques-labs/nestjs-kit`, JSON file + console transports |
-| Kafka event forwarding | `@sisques-labs/nestjs-kit/messaging` (wired in `src/app.module.ts`); `src/core/messaging/` keeps only the app-local, auto-generated aggregate→topic map | Opt-in (`KAFKA_ENABLED`), no-op when disabled |
-| Prometheus metrics | `@sisques-labs/nestjs-kit/metrics` (wired in `src/app.module.ts`) | `GET /api/metrics`, HTTP (REST+GraphQL) + CQRS instrumentation |
+| Kafka event forwarding | `@sisques-labs/nestjs-kit/messaging` (wired in `src/core/core.module.ts`); `src/core/messaging/` keeps only the app-local, auto-generated aggregate→topic map | Opt-in (`KAFKA_ENABLED`), no-op when disabled |
+| Prometheus metrics | `@sisques-labs/nestjs-kit/metrics` (wired in `src/core/core.module.ts`) | `GET /api/metrics`, HTTP (REST+GraphQL) + CQRS instrumentation |
 | Sentry | `src/core/observability/` | Disabled until `SENTRY_DSN` is set |
-| MCP (Model Context Protocol) | `@sisques-labs/nestjs-kit/mcp` (wired in `src/app.module.ts`) | `POST /api/mcp`, per-request server, tool auto-discovery |
-| REST + GraphQL | `src/main.ts`, `src/app.module.ts` | Swagger at `/docs`, Apollo GraphQL at `/graphql` (drop whichever transport you don't need) |
+| MCP (Model Context Protocol) | `@sisques-labs/nestjs-kit/mcp` (wired in `src/core/core.module.ts`) | `POST /api/mcp`, per-request server, tool auto-discovery |
+| REST + GraphQL | `src/main.ts`, `src/core/core.module.ts` | Swagger at `/docs`, Apollo GraphQL at `/graphql` (drop whichever transport you don't need) |
 | Database | `src/database/`, TypeORM | Postgres only; migrations in `src/database/migrations/` |
 | CI/CD | `.github/workflows/` | `ci.yml` (lint+test+build+e2e+integration), `docker.yml` (PR smoke build), `release.yml` / `release-train.yml` (via `sisques-labs/workflows`) |
 | Dev workflow | `AGENTS.md`, `.claude/`, `openspec/` | Architecture skill, OpenSpec propose/apply/archive skills, project conventions in `openspec/config.yaml` |
@@ -56,7 +57,7 @@ specific enough that they'd bias the template toward one shape:
 
 - **Auth** (JWT/OAuth/sessions) and **multi-tenancy** — add what your service
   actually needs; the MCP module's `contextBuilder` option (see
-  `McpModule.forRoot(...)` in `src/app.module.ts`, and `IMcpContextBuilder`
+  `McpModule.forRoot(...)` in `src/core/core.module.ts`, and `IMcpContextBuilder`
   from `@sisques-labs/nestjs-kit/mcp`) and `src/core/filters/base-exception.filter.ts`
   both have a documented extension point for when you do.
 - **Bounded contexts / business domain** — this is infrastructure only.

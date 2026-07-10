@@ -1,60 +1,8 @@
-import { appConfig } from '@core/config/app.config';
-import { validateEnv } from '@core/config/env.validation';
-import { kafkaConfig } from '@core/config/kafka.config';
-import { postgresConfig } from '@core/config/postgres.config';
-import { sentryConfig } from '@core/config/sentry.config';
-import { AGGREGATE_MODULE_MAP } from '@core/messaging/domain/topics/aggregate-module.map.generated';
-import { HealthModule } from '@core/health/health.module';
-import { ObservabilityModule } from '@core/observability/observability.module';
-import { PingResolver } from '@core/transport/graphql/resolvers/ping.resolver';
-import '@core/transport/graphql/registered-enums.graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { CoreModule } from '@core/core.module';
+import { ContextsModule } from '@contexts/contexts.module';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CqrsModule } from '@nestjs/cqrs';
-import { GraphQLModule } from '@nestjs/graphql';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { SharedGraphQLModule } from '@sisques-labs/nestjs-kit/graphql';
-import { McpModule } from '@sisques-labs/nestjs-kit/mcp';
-import { MessagingModule } from '@sisques-labs/nestjs-kit/messaging';
-import { MetricsModule } from '@sisques-labs/nestjs-kit/metrics';
-import { SupportModule } from './support/support.module';
 
 @Module({
-  imports: [
-    SupportModule,
-    CqrsModule.forRoot(),
-    SharedGraphQLModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validate: validateEnv,
-      load: [postgresConfig, appConfig, sentryConfig, kafkaConfig],
-      cache: true,
-    }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) =>
-        config.getOrThrow<TypeOrmModuleOptions>('postgres'),
-    }),
-    // REST controllers are documented via Swagger (see main.ts). GraphQL is
-    // wired alongside it — drop whichever transport this service doesn't use.
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: true,
-      playground: true,
-      context: ({ req, res }: { req: Request; res: Response }) => ({
-        req,
-        res,
-      }),
-    }),
-    ObservabilityModule,
-    MetricsModule.forRoot({ appLabel: 'nestjs-template' }),
-    MessagingModule.forRoot({ aggregateModuleMap: AGGREGATE_MODULE_MAP }),
-    HealthModule,
-    // No auth yet, so the default context builder (`{ requestId }`) is used —
-    // pass `contextBuilder` here once this service resolves an identity.
-    McpModule.forRoot({ name: 'nestjs-template', version: '0.1.0' }),
-  ],
-  providers: [PingResolver],
+  imports: [CoreModule, ContextsModule],
 })
 export class AppModule {}
