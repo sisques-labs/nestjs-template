@@ -1,99 +1,95 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS Template
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Sisques Labs' base template for new NestJS services: **DDD + CQRS + Hexagonal**
+architecture, TypeORM/PostgreSQL, optional Kafka event forwarding, REST
+(Swagger) + GraphQL (Apollo) transports, structured logging
+(`@sisques-labs/nestjs-kit` + Winston), Sentry, Prometheus metrics, an MCP
+endpoint, health checks, and the CI/CD workflows this org uses in production —
+all wired and ready to clone into a new service.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+It ships with **zero bounded contexts** (`src/contexts/`) on purpose: the
+cross-cutting infrastructure (`src/core/`, `src/support/`) is the whole point
+of this repo, and the first context your new service adds defines the pattern
+every subsequent one follows (see the `architecture` skill in
+`.claude/skills/architecture/SKILL.md`).
 
-## Description
+## Using this template for a new service
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+1. Create the new repo from this template (GitHub "Use this template", or
+   clone + re-init git).
+2. Rename the placeholder identifiers in one shot:
+   ```bash
+   scripts/rename-service.sh orders-api "Orders API"
+   pnpm install
+   ```
+   This rewrites every occurrence of `nestjs-template` / `NestJS Template` —
+   `package.json`, Docker image names in `.github/workflows/`, the Kafka
+   client id/topic prefix defaults, Sentry release, Prometheus
+   `defaultLabels.app`, the MCP server name, docker-compose database names,
+   and this README.
+3. Copy `.env.example` to `.env` and fill in real values.
+4. `pnpm test:db:up` to start a local Postgres, then `pnpm dev`.
+5. Add your first bounded context under `src/contexts/` and register its
+   module in `CONTEXT_MODULES` in `src/contexts/contexts.module.ts` — invoke
+   the `architecture` skill (or read `.claude/skills/architecture/SKILL.md`
+   directly) for the DDD+CQRS+Hexagonal layer rules and file naming.
 
-## Project setup
+## What's included
+
+| Area | Where | Notes |
+|------|-------|-------|
+| Config + env validation | `src/core/config/` | Zod-validated env vars, CORS origin resolution |
+| Health checks | `src/core/health/` | `GET /api/health/live` (liveness), `GET /api/health/ready` (DB ping via `@nestjs/terminus`) |
+| Logging | `src/support/logging/` | Winston via `@sisques-labs/nestjs-kit`, JSON file + console transports |
+| Kafka event forwarding | `@sisques-labs/nestjs-kit/messaging` (wired in `src/core/core.module.ts`); `src/core/messaging/` keeps only the app-local, auto-generated aggregate→topic map | Opt-in (`KAFKA_ENABLED`), no-op when disabled |
+| Prometheus metrics | `@sisques-labs/nestjs-kit/metrics` (wired in `src/core/core.module.ts`) | `GET /api/metrics`, HTTP (REST+GraphQL) + CQRS instrumentation |
+| Sentry | `src/core/observability/` | Disabled until `SENTRY_DSN` is set |
+| MCP (Model Context Protocol) | `@sisques-labs/nestjs-kit/mcp` (wired in `src/core/core.module.ts`) | `POST /api/mcp`, per-request server, tool auto-discovery |
+| REST + GraphQL | `src/main.ts`, `src/core/core.module.ts` | Swagger at `/docs`, Apollo GraphQL at `/graphql` (drop whichever transport you don't need) |
+| Database | `src/database/`, TypeORM | Postgres only; migrations in `src/database/migrations/` |
+| CI/CD | `.github/workflows/` | `ci.yml` (lint+test+build+e2e+integration), `docker.yml` (PR smoke build), `release.yml` / `release-train.yml` (via `sisques-labs/workflows`) |
+| Dev workflow | `AGENTS.md`, `.claude/`, `openspec/` | Architecture skill, OpenSpec propose/apply/archive skills, project conventions in `openspec/config.yaml` |
+
+## Deliberately not included
+
+These are common enough that they shouldn't be baked into every service, but
+specific enough that they'd bias the template toward one shape:
+
+- **Auth** (JWT/OAuth/sessions) and **multi-tenancy** — add what your service
+  actually needs; the MCP module's `contextBuilder` option (see
+  `McpModule.forRoot(...)` in `src/core/core.module.ts`, and `IMcpContextBuilder`
+  from `@sisques-labs/nestjs-kit/mcp`) and `src/core/filters/base-exception.filter.ts`
+  both have a documented extension point for when you do.
+- **Bounded contexts / business domain** — this is infrastructure only.
+- **MongoDB** — `@sisques-labs/nestjs-kit/mongodb` is available if a service
+  needs it alongside or instead of Postgres.
+
+## Local development
 
 ```bash
-$ pnpm install
+pnpm install
+pnpm test:db:up      # Postgres on localhost:5434 (dev) — see docker-compose.yml
+pnpm dev              # nest start --watch
 ```
 
-## Compile and run the project
+| Script | Description |
+|--------|-------------|
+| `pnpm dev` / `pnpm debug` / `pnpm prod` | Run the app (watch / debug / prod) |
+| `pnpm lint` | ESLint with `--fix` |
+| `pnpm test` / `pnpm test:cov` | Unit tests (Jest, co-located `*.spec.ts`) |
+| `pnpm test:e2e` | E2E tests against a real Postgres (`docker-compose.test.yml`) |
+| `pnpm test:integration` | Integration tests (persistence boundaries) |
+| `pnpm migration:generate` / `:run` / `:revert` | TypeORM migrations |
+| `pnpm gen:topics` / `:check` | Regenerate/verify the Kafka aggregate→module map |
 
-```bash
-# development
-$ pnpm run start
+Husky runs `pnpm gen:topics` + `lint-staged` on **pre-commit**, and
+`pnpm build && pnpm test:changed` on **pre-push**.
 
-# watch mode
-$ pnpm run start:dev
+See `.env.example` for every environment variable this service reads.
 
-# production mode
-$ pnpm run start:prod
-```
+## Architecture
 
-## Run tests
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+DDD + CQRS + Hexagonal (Screaming Architecture). Full rules, file naming, and
+the mandatory find-by-criteria filter pattern live in
+`.claude/skills/architecture/SKILL.md`; project-wide conventions (tech stack,
+testing layers, apply-time rules) live in `openspec/config.yaml`.
