@@ -1,6 +1,6 @@
 {
   "name": "sisqueslabs/nestjs-template",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Sisques Labs NestJS service template — DDD+CQRS+Hexagonal, TypeORM/Postgres, Kafka, GraphQL+REST, Sentry, Prometheus, MCP.",
   "author": "Sisques Labs",
   "repository": {
@@ -85,7 +85,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^20.3.1",
     "@types/supertest": "^7.2.1",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.64.0",
     "@typescript-eslint/parser": "^8.64.0",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^10.1.8",
