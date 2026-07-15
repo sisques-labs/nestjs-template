@@ -1,6 +1,10 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.1.3] - 2026-07-15
+
+### Chore
+- **deps-dev:** Bump @typescript-eslint/eslint-plugin (5149f34)
 ## [0.1.2] - 2026-07-15
 
 ### Chore
