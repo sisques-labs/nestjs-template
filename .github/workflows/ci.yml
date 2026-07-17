@@ -8,38 +8,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
+  ci:
+    name: Lint, Test & Build
+    uses: sisques-labs/workflows/.github/workflows/node-ci.yml@main
+    with:
+      node_version: "22"
+      extra_check_command: "gen:topics:check"
 
-    steps:
-      - name: Setup
-        uses: sisques-labs/workflows/.github/actions/setup@main
-        with:
-          node_version: "22"
-
-      - name: Install dependencies
-        uses: sisques-labs/workflows/.github/actions/install@main
-        with:
-          app_path: "."
-          frozen_lockfile: "true"
-
-      - name: Lint code
-        run: pnpm lint
-
-      - name: Check Kafka topic map is in sync
-        run: pnpm gen:topics:check
-
-      - name: Run unit tests
-        run: pnpm test
-
-      - name: Build the app
-        run: pnpm build
-
+  # No `needs: ci` — e2e/integration run straight from source (they don't
+  # consume the `ci` job's build output), so they start in parallel with
+  # lint/test/build instead of queuing behind them.
   e2e:
     name: E2E tests (Postgres)
     runs-on: ubuntu-latest
-    needs: build
 
     services:
       postgres:
@@ -87,7 +68,6 @@ jobs:
   integration:
     name: Integration tests (Postgres)
     runs-on: ubuntu-latest
-    needs: build
 
     services:
       postgres:
