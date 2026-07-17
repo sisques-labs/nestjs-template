@@ -1,6 +1,11 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.1.7] - 2026-07-17
+
+### CI
+- **labeler:** Auto-label PRs by changed files (7dbc2da)
+- **release-train:** Sync dependabot/updates after stable release (0b237ca)
 ## [0.1.6] - 2026-07-17
 
 ### Bug Fixes
