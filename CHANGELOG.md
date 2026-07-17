@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.1.8] - 2026-07-17
+
+### CI
+- **release:** Scan Docker image for vulnerabilities with Trivy (94420ac)
+- Parallelize lint/test/build via node-ci, decouple e2e/integration (ef978ca)
+- **docker:** Block PR merge on CRITICAL image vulnerabilities (14a10ae)
 ## [0.1.7] - 2026-07-17
 
 ### CI
