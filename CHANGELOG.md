@@ -1,6 +1,23 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.1.6] - 2026-07-17
+
+### Bug Fixes
+- **deps:** Update dependency @nestjs/core to v11 [security] (8ba73b4)
+- **deps:** Update dependency @nestjs/swagger to v11 (7c64121)
+- **deps:** Update dependency @nestjs/graphql to v13 (69b71a9)
+- **deps:** Update dependency class-validator to ^0.15.0 (9ee5e24)
+- **deps:** Update dependency @nestjs/platform-express to v11 (fdce341)
+- **deps:** Update dependency @nestjs/common to v11 (6bb2af2)
+- **deps:** Update dependency graphql to v17 (b87943c)
+
+### Chore
+- **deps:** Update node.js to v24 (d0c7aef)
+- **deps:** Lock file maintenance (0d81785)
+- **deps:** Update pnpm to v9.15.9 (41b881f)
+- **deps:** Update postgres docker tag to v18 (49c7a3d)
+- **deps:** Update dependency @nestjs/testing to v11 (d0ffd49)
 ## [0.1.5] - 2026-07-17
 
 ### CI
