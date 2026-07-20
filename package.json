@@ -10,7 +10,7 @@
   "homepage": "https://github.com/sisques-labs/nestjs-template",
   "private": true,
   "license": "UNLICENSED",
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
