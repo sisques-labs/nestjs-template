@@ -43,6 +43,10 @@ COPY --from=builder --chown=node:node /app/dist ./dist
 
 RUN mkdir -p logs && chown node:node logs
 
+# npm is bundled in the base image but unused at runtime (only `node dist/main`
+# runs here); dropping it removes its bundled vulnerable `tar` dependency.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
 USER node
 EXPOSE 3000
 
