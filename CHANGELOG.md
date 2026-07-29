@@ -1,6 +1,15 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.1.11] - 2026-07-29
+
+### Bug Fixes
+- **deps:** Update dependency graphql-query-complexity to v2 (f7243ce)
+
+### Chore
+- **deps:** Update dependency ts-jest to v29.4.12 (c5ea68f)
+- **deps:** Update dependency prettier to v3.9.6 (cd6872a)
+- **deps:** Lock file maintenance (#102) (1106dcf)
 ## [0.1.10] - 2026-07-28
 
 ### Bug Fixes
