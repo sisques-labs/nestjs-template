@@ -1,6 +1,6 @@
 {
   "name": "sisqueslabs/nestjs-template",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Sisques Labs NestJS service template — DDD+CQRS+Hexagonal, TypeORM/Postgres, Kafka, GraphQL+REST, Sentry, Prometheus, MCP.",
   "author": "Sisques Labs",
   "repository": {
@@ -63,7 +63,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "graphql": "^17.0.0",
-    "graphql-query-complexity": "^1.1.0",
+    "graphql-query-complexity": "^2.0.0",
     "graphql-type-json": "^0.3.2",
     "kafkajs": "^2.2.4",
     "nest-winston": "^1.10.2",
