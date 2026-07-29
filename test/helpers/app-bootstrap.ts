@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
-import * as request from 'supertest';
+import request from 'supertest';
 import { DataSource } from 'typeorm';
 
 import { AppModule } from '../../src/app.module';
