@@ -1,6 +1,13 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.1.13] - 2026-08-03
+
+### Chore
+- **deps:** Update dependency @sisques-labs/nestjs-kit to v1.5.1 (#112) (8995d6b)
+- **deps:** Lock file maintenance (#115) (f69e919)
+- **deps:** Update dependency lint-staged to v17.3.0 (45c4cb8)
+- **deps:** Update pnpm to v11.18.0 (8083d83)
 ## [0.1.12] - 2026-07-29
 
 ### Bug Fixes
