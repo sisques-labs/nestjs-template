@@ -1,6 +1,6 @@
 {
   "name": "sisqueslabs/nestjs-template",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Sisques Labs NestJS service template — DDD+CQRS+Hexagonal, TypeORM/Postgres, Kafka, GraphQL+REST, Sentry, Prometheus, MCP.",
   "author": "Sisques Labs",
   "repository": {
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/sisques-labs/nestjs-template",
   "private": true,
   "license": "UNLICENSED",
-  "packageManager": "pnpm@11.17.0",
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

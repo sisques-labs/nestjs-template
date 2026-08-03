@@ -1,6 +1,16 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.1.12] - 2026-07-29
+
+### Bug Fixes
+- **ci:** Fix docker build and e2e TS6 fallout from pnpm 11/TS6 migration (d9ed0c4)
+
+### Chore
+- Migrate to pnpm 11 and TypeScript 6 (693b2c1)
+
+### Refactor
+- Use a dedicated tsconfig for gen:topics instead of inline -O JSON (f22b3bf)
 ## [0.1.11] - 2026-07-29
 
 ### Bug Fixes
