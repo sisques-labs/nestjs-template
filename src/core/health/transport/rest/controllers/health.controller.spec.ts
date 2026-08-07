@@ -54,5 +54,19 @@ describe('HealthController', () => {
       expect(health.check).toHaveBeenCalledWith([expect.any(Function)]);
       expect(response).toBe(result);
     });
+
+    it('invokes the database ping indicator', async () => {
+      health.check.mockImplementation(async (indicators) => {
+        for (const indicator of indicators) {
+          await indicator();
+        }
+        return { status: 'ok', info: {}, error: {}, details: {} };
+      });
+      db.pingCheck.mockResolvedValue({ database: { status: 'up' } });
+
+      await controller.ready();
+
+      expect(db.pingCheck).toHaveBeenCalledWith('database');
+    });
   });
 });

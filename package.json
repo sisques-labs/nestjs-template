@@ -1,6 +1,6 @@
 {
   "name": "sisqueslabs/nestjs-template",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Sisques Labs NestJS service template — DDD+CQRS+Hexagonal, TypeORM/Postgres, Kafka, GraphQL+REST, Sentry, Prometheus, MCP.",
   "author": "Sisques Labs",
   "repository": {
@@ -116,9 +116,30 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!main.ts",
+      "!instrument.ts",
+      "!**/*.module.ts",
+      "!database/data-source.ts",
+      "!**/*.interface.ts",
+      "!**/*.primitives.ts",
+      "!**/*.entity.ts",
+      "!**/*.dto.ts",
+      "!**/*.input.ts",
+      "!**/*.object.ts",
+      "!**/*.view-model.ts",
+      "!**/*.enum.ts",
+      "!**/*.generated.ts"
     ],
     "coverageDirectory": "../coverage",
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    },
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^@core/(.*)$": "<rootDir>/core/$1"

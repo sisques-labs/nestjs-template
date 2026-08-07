@@ -1,6 +1,11 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.1.14] - 2026-08-07
+
+### Testing
+- Enforce 80% coverage threshold and close coverage gaps (350a002)
+- Exclude structural, logic-free files from coverage collection (4db16fc)
 ## [0.1.13] - 2026-08-03
 
 ### Chore
