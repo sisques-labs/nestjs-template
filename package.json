@@ -120,7 +120,16 @@
       "!main.ts",
       "!instrument.ts",
       "!**/*.module.ts",
-      "!database/data-source.ts"
+      "!database/data-source.ts",
+      "!**/*.interface.ts",
+      "!**/*.primitives.ts",
+      "!**/*.entity.ts",
+      "!**/*.dto.ts",
+      "!**/*.input.ts",
+      "!**/*.object.ts",
+      "!**/*.view-model.ts",
+      "!**/*.enum.ts",
+      "!**/*.generated.ts"
     ],
     "coverageDirectory": "../coverage",
     "coverageThreshold": {
