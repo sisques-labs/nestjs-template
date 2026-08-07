@@ -37,4 +37,10 @@ describe('sentryConfig', () => {
       profileSessionSampleRate: 1,
     });
   });
+
+  it('throws for an out-of-range Sentry sample rate', () => {
+    process.env.SENTRY_TRACES_SAMPLE_RATE = '1.5';
+
+    expect(() => sentryConfig()).toThrow(/Invalid Sentry sample rate "1.5"/);
+  });
 });
