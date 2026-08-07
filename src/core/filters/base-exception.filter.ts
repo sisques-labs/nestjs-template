@@ -47,6 +47,7 @@ export class BaseExceptionFilter
   }
 
   private resolveStatus(exception: BaseException): number {
+    /* istanbul ignore next -- extension point, empty until a bounded context registers a resolver */
     for (const resolve of EXCEPTION_STATUS_RESOLVERS) {
       const status = resolve(exception);
       if (status !== undefined) {
