@@ -69,4 +69,19 @@ describe('validateEnv', () => {
 
     expect(() => validateEnv(env)).not.toThrow();
   });
+
+  it('accepts CORS_ORIGINS as CORS origin in production', () => {
+    const env = validEnv({
+      NODE_ENV: 'production',
+      CORS_ORIGINS: 'https://app.example.com',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
+
+  it('formats a root-level issue without a field path', () => {
+    expect(() =>
+      validateEnv(null as unknown as Record<string, unknown>),
+    ).toThrow(/\(root\)/);
+  });
 });
