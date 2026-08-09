@@ -2,8 +2,8 @@
 
 Sisques Labs' base template for new NestJS services: DDD + CQRS + Hexagonal
 architecture, TypeORM/PostgreSQL, optional Kafka event forwarding, REST
-(Swagger) + GraphQL (Apollo) transports, structured logging, Sentry,
-Prometheus metrics, and an MCP endpoint.
+(Swagger) + GraphQL (Apollo) transports, structured logging, OpenTelemetry
+traces + metrics + logs, and an MCP endpoint.
 
 This image ships with **zero bounded contexts** — it's the infrastructure
 skeleton new services are cloned from, not a ready-to-run business API.
@@ -34,10 +34,13 @@ The container needs a reachable PostgreSQL instance — it does not bundle one.
 |------|---------|
 | `GET /api/health/live` | Liveness probe |
 | `GET /api/health/ready` | Readiness probe (checks DB connectivity) |
-| `GET /api/metrics` | Prometheus metrics |
 | `POST /api/mcp` | MCP (Model Context Protocol) endpoint |
 | `POST /graphql` | GraphQL (Apollo) |
 | `GET /docs` | Swagger UI |
+
+Traces, metrics, and logs are pushed via OTLP to a collector (see
+`OTEL_EXPORTER_OTLP_ENDPOINT` below) — there is no in-process `/metrics`
+endpoint to scrape. Logs still go to stdout/file regardless.
 
 ## Environment variables
 
@@ -53,7 +56,7 @@ The container needs a reachable PostgreSQL instance — it does not bundle one.
 | `DATABASE_DATABASE` | — | **Yes** | |
 | `DATABASE_MIGRATIONS_RUN` | `true` | No | Runs pending migrations on boot |
 | `CORS_ORIGINS` | — | Production only | Comma-separated allowed origins |
-| `SENTRY_DSN` | — | No | Sentry error reporting disabled when unset |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | No | OpenTelemetry traces+metrics+logs disabled when unset |
 | `KAFKA_ENABLED` | `false` | No | Domain event forwarding; app boots fine without a broker when disabled |
 | `KAFKA_BROKERS` | — | If Kafka enabled | Comma-separated broker list |
 | `LOG_LEVEL` | `info` | No | |

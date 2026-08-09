@@ -1,6 +1,11 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.2.0] - 2026-08-09
+
+### Features
+- **observability:** Replace Sentry and Prometheus with OpenTelemetry (e82a8f2)
+- **observability:** Forward logs through the OpenTelemetry pipeline (2a129dd)
 ## [0.1.14] - 2026-08-07
 
 ### Testing
