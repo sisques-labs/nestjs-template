@@ -3,7 +3,7 @@
 Sisques Labs' base template for new NestJS services: DDD + CQRS + Hexagonal
 architecture, TypeORM/PostgreSQL, optional Kafka event forwarding, REST
 (Swagger) + GraphQL (Apollo) transports, structured logging, OpenTelemetry
-traces + metrics, and an MCP endpoint.
+traces + metrics + logs, and an MCP endpoint.
 
 This image ships with **zero bounded contexts** — it's the infrastructure
 skeleton new services are cloned from, not a ready-to-run business API.
@@ -38,9 +38,9 @@ The container needs a reachable PostgreSQL instance — it does not bundle one.
 | `POST /graphql` | GraphQL (Apollo) |
 | `GET /docs` | Swagger UI |
 
-Traces and metrics are pushed via OTLP to a collector (see
+Traces, metrics, and logs are pushed via OTLP to a collector (see
 `OTEL_EXPORTER_OTLP_ENDPOINT` below) — there is no in-process `/metrics`
-endpoint to scrape.
+endpoint to scrape. Logs still go to stdout/file regardless.
 
 ## Environment variables
 
@@ -56,7 +56,7 @@ endpoint to scrape.
 | `DATABASE_DATABASE` | — | **Yes** | |
 | `DATABASE_MIGRATIONS_RUN` | `true` | No | Runs pending migrations on boot |
 | `CORS_ORIGINS` | — | Production only | Comma-separated allowed origins |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | No | OpenTelemetry traces+metrics disabled when unset |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | No | OpenTelemetry traces+metrics+logs disabled when unset |
 | `KAFKA_ENABLED` | `false` | No | Domain event forwarding; app boots fine without a broker when disabled |
 | `KAFKA_BROKERS` | — | If Kafka enabled | Comma-separated broker list |
 | `LOG_LEVEL` | `info` | No | |
