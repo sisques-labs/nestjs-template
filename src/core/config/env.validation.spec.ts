@@ -84,4 +84,20 @@ describe('validateEnv', () => {
       validateEnv(null as unknown as Record<string, unknown>),
     ).toThrow(/\(root\)/);
   });
+
+  it('accepts a valid OTEL_EXPORTER_OTLP_ENDPOINT', () => {
+    const env = validEnv({
+      OTEL_EXPORTER_OTLP_ENDPOINT: 'http://localhost:4318',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
+
+  it('rejects a non-URL OTEL_EXPORTER_OTLP_ENDPOINT', () => {
+    const env = validEnv({ OTEL_EXPORTER_OTLP_ENDPOINT: 'not-a-url' });
+
+    expect(() => validateEnv(env)).toThrow(
+      /Environment validation failed:[\s\S]*OTEL_EXPORTER_OTLP_ENDPOINT/,
+    );
+  });
 });

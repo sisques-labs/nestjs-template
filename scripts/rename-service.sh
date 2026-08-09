@@ -6,7 +6,7 @@
 #
 # <new-service-name> must be kebab-case (e.g. "orders-api"). It replaces every
 # occurrence of "nestjs-template" across the repo — package name, Docker image
-# names, Kafka client id/topic prefix defaults, Sentry/metrics/MCP identifiers,
+# names, Kafka client id/topic prefix defaults, OpenTelemetry/MCP identifiers,
 # docker-compose database names, etc. The title (used in the Swagger page and
 # README heading) defaults to a Title Case version of the name if omitted.
 set -euo pipefail
