@@ -1,14 +1,10 @@
 import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
-import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
+import { CqrsModule } from '@nestjs/cqrs';
+
+import { CqrsObservabilityService } from './cqrs-observability.service';
 
 @Module({
-  imports: [SentryModule.forRoot()],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: SentryGlobalFilter,
-    },
-  ],
+  imports: [CqrsModule],
+  providers: [CqrsObservabilityService],
 })
 export class ObservabilityModule {}
