@@ -3,7 +3,7 @@
 Sisques Labs' base template for new NestJS services: **DDD + CQRS + Hexagonal**
 architecture, TypeORM/PostgreSQL, optional Kafka event forwarding, REST
 (Swagger) + GraphQL (Apollo) transports, structured logging
-(`@sisques-labs/nestjs-kit` + Winston), Sentry, Prometheus metrics, an MCP
+(`@sisques-labs/nestjs-kit` + Winston), OpenTelemetry traces + metrics, an MCP
 endpoint, health checks, and the CI/CD workflows this org uses in production —
 all wired and ready to clone into a new service.
 
@@ -24,9 +24,8 @@ every subsequent one follows (see the `architecture` skill in
    ```
    This rewrites every occurrence of `nestjs-template` / `NestJS Template` —
    `package.json`, Docker image names in `.github/workflows/`, the Kafka
-   client id/topic prefix defaults, Sentry release, Prometheus
-   `defaultLabels.app`, the MCP server name, docker-compose database names,
-   and this README.
+   client id/topic prefix defaults, the default `OTEL_SERVICE_NAME`, the MCP
+   server name, docker-compose database names, and this README.
 3. Copy `.env.example` to `.env` and fill in real values.
 4. `pnpm test:db:up` to start a local Postgres, then `pnpm dev`.
 5. Add your first bounded context under `src/contexts/` and register its
@@ -42,8 +41,7 @@ every subsequent one follows (see the `architecture` skill in
 | Health checks | `src/core/health/` | `GET /api/health/live` (liveness), `GET /api/health/ready` (DB ping via `@nestjs/terminus`) |
 | Logging | `src/support/logging/` | Winston via `@sisques-labs/nestjs-kit`, JSON file + console transports |
 | Kafka event forwarding | `@sisques-labs/nestjs-kit/messaging` (wired in `src/core/core.module.ts`); `src/core/messaging/` keeps only the app-local, auto-generated aggregate→topic map | Opt-in (`KAFKA_ENABLED`), no-op when disabled |
-| Prometheus metrics | `@sisques-labs/nestjs-kit/metrics` (wired in `src/core/core.module.ts`) | `GET /api/metrics`, HTTP (REST+GraphQL) + CQRS instrumentation |
-| Sentry | `src/core/observability/` | Disabled until `SENTRY_DSN` is set |
+| OpenTelemetry | `src/telemetry.ts` (bootstrap), `src/core/observability/` (CQRS spans+metrics) | Traces + metrics exported via OTLP to a collector; disabled until `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Auto-instruments HTTP/Express, GraphQL, Postgres, Kafka; CQRS command/query buses get spans + duration/count metrics. `docker-compose.yml` ships a local collector + Jaeger UI (`:16686`) + Prometheus UI (`:9090`) |
 | MCP (Model Context Protocol) | `@sisques-labs/nestjs-kit/mcp` (wired in `src/core/core.module.ts`) | `POST /api/mcp`, per-request server, tool auto-discovery |
 | REST + GraphQL | `src/main.ts`, `src/core/core.module.ts` | Swagger at `/docs`, Apollo GraphQL at `/graphql` (drop whichever transport you don't need) |
 | Database | `src/database/`, TypeORM | Postgres only; migrations in `src/database/migrations/` |
