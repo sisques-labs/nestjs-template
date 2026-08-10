@@ -169,7 +169,7 @@ importers:
         specifier: ^8.0.0
         version: 8.57.1(supports-color@8.1.1)
       eslint-config-prettier:
-        specifier: ^10.1.8
+        specifier: 10.1.8
         version: 10.1.8(eslint@8.57.1(supports-color@8.1.1))
       eslint-import-resolver-typescript:
         specifier: ^4.4.5
