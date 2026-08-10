@@ -20,7 +20,7 @@ services:
   # Local OpenTelemetry stack — optional, for viewing traces/metrics in dev.
   # Point the app at it with OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
   jaeger:
-    image: jaegertracing/all-in-one:1.63.0
+    image: jaegertracing/all-in-one:1.76.0
     ports:
       - '16686:16686' # UI — http://localhost:16686
     environment:
