@@ -1,6 +1,24 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.2.1] - 2026-08-10
+
+### Chore
+- **deps:** Update dependency @sisques-labs/nestjs-kit to v1.6.1 (#127) (3427695)
+- **deps:** Update prom/prometheus docker tag to v3.13.2 (4a29541)
+- **deps:** Update pnpm to v11.21.0 (f70e7fb)
+- **deps:** Update otel/opentelemetry-collector-contrib docker tag to v0.158.0 (4dc5979)
+- **deps:** Update jaegertracing/all-in-one docker tag to v1.76.0 (dd14cd7)
+- **deps:** Pin dependency @nestjs/cli to 11.0.24 (a2816a3)
+- **deps:** Pin dependency @testcontainers/postgresql to 12.0.4 (6b9b37d)
+- **deps:** Pin dependency @nestjs/schematics to 11.1.0 (2cd9998)
+- **deps:** Pin dependency @nestjs/testing to 11.1.28 (d7b5718)
+- **deps:** Pin dependency @typescript-eslint/eslint-plugin to 8.65.0 (2875929)
+- **deps:** Pin dependency @typescript-eslint/parser to 8.65.0 (6214855)
+- **deps:** Pin dependency eslint-config-prettier to 10.1.8 (fee65f4)
+- **deps:** Pin dependency eslint-import-resolver-typescript to 4.4.5 (ca8c1ec)
+- **deps:** Pin dependency eslint-plugin-boundaries to 7.1.0 (e29f918)
+- **deps:** Pin dependency eslint to 8.57.1 (576467b)
 ## [0.2.0] - 2026-08-09
 
 ### Features
@@ -18,6 +36,7 @@ All notable changes to this project will be documented in this file.
 - **deps:** Lock file maintenance (#115) (f69e919)
 - **deps:** Update dependency lint-staged to v17.3.0 (45c4cb8)
 - **deps:** Update pnpm to v11.18.0 (8083d83)
+- **deps:** Lock file maintenance (#117) (15b468c)
 ## [0.1.12] - 2026-07-29
 
 ### Bug Fixes
