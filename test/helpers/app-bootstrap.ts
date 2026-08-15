@@ -1,4 +1,9 @@
-import { INestApplication, Type, ValidationPipe } from '@nestjs/common';
+import {
+  DynamicModule,
+  INestApplication,
+  Type,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import request from 'supertest';
@@ -20,6 +25,15 @@ export interface E2EAppOptions {
   controllers?: Type<unknown>[];
   /** DI tokens to override with a fixed value before compiling the module — e.g. a mocked provider. */
   overrideProviders?: Array<{ token: unknown; useValue: unknown }>;
+  /**
+   * Extra modules to import into the root testing module, alongside
+   * AppModule — e.g. a non-`@Global()` module (such as `TenancyModule`)
+   * whose providers an ad-hoc `controllers` entry needs to inject/guard
+   * with, but that AppModule doesn't export to its own scope. Optional and
+   * defaults to none, so existing callers that don't pass it are
+   * unaffected.
+   */
+  imports?: Array<Type<unknown> | DynamicModule>;
 }
 
 export async function createE2EApp(
@@ -28,7 +42,7 @@ export async function createE2EApp(
   await bootstrapTestDataSource();
 
   let builder: TestingModuleBuilder = Test.createTestingModule({
-    imports: [AppModule],
+    imports: [AppModule, ...(options.imports ?? [])],
     controllers: options.controllers ?? [],
   });
   for (const { token, useValue } of options.overrideProviders ?? []) {
