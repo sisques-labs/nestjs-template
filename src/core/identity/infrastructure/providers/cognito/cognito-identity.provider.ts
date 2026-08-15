@@ -1,0 +1,187 @@
+import {
+  AdminCreateUserCommand,
+  AdminDeleteUserCommand,
+  AdminDisableUserCommand,
+  AdminInitiateAuthCommand,
+  AdminResetUserPasswordCommand,
+  AdminUpdateUserAttributesCommand,
+  AttributeType,
+  AuthFlowType,
+  AuthenticationResultType,
+  CognitoIdentityProviderClient,
+} from '@aws-sdk/client-cognito-identity-provider';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
+
+import { IIdentityProvider } from '../../../application/ports/identity-provider.port';
+import { ILoginCredentials } from '../../../application/ports/login-credentials.interface';
+import { IPrincipal } from '../../../application/ports/principal.interface';
+import { ITokenSet } from '../../../application/ports/token-set.interface';
+import { IUserAttributes } from '../../../application/ports/user-attributes.interface';
+import { mapCognitoClaimsToPrincipal } from './cognito-claims.mapper';
+
+/** Bridges `IIdentityProvider` to an AWS Cognito User Pool. */
+@Injectable()
+export class CognitoIdentityProvider implements IIdentityProvider {
+  private readonly logger = new Logger(CognitoIdentityProvider.name);
+  private readonly client: CognitoIdentityProviderClient;
+  private readonly userPoolId: string;
+  private readonly clientId: string;
+  private readonly issuer: string;
+  private readonly jwks: ReturnType<typeof createRemoteJWKSet>;
+
+  constructor(config: ConfigService) {
+    const region = config.getOrThrow<string>('COGNITO_REGION');
+    this.userPoolId = config.getOrThrow<string>('COGNITO_USER_POOL_ID');
+    this.clientId = config.getOrThrow<string>('COGNITO_CLIENT_ID');
+    this.client = new CognitoIdentityProviderClient({ region });
+    this.issuer = `https://cognito-idp.${region}.amazonaws.com/${this.userPoolId}`;
+    this.jwks = createRemoteJWKSet(
+      new URL(`${this.issuer}/.well-known/jwks.json`),
+    );
+  }
+
+  async login(credentials: ILoginCredentials): Promise<ITokenSet> {
+    this.logger.log('Login requested (Cognito)');
+    const result = await this.client.send(
+      new AdminInitiateAuthCommand({
+        UserPoolId: this.userPoolId,
+        ClientId: this.clientId,
+        AuthFlow: AuthFlowType.ADMIN_USER_PASSWORD_AUTH,
+        AuthParameters: {
+          USERNAME: credentials.email,
+          PASSWORD: credentials.password,
+        },
+      }),
+    );
+    return this.toTokenSet(result.AuthenticationResult);
+  }
+
+  async refreshToken(refreshToken: string): Promise<ITokenSet> {
+    this.logger.log('Token refresh requested (Cognito)');
+    const result = await this.client.send(
+      new AdminInitiateAuthCommand({
+        UserPoolId: this.userPoolId,
+        ClientId: this.clientId,
+        AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
+        AuthParameters: { REFRESH_TOKEN: refreshToken },
+      }),
+    );
+    return this.toTokenSet(result.AuthenticationResult, refreshToken);
+  }
+
+  async verifyToken(accessToken: string): Promise<IPrincipal> {
+    try {
+      const { payload } = await jwtVerify(accessToken, this.jwks, {
+        issuer: this.issuer,
+      });
+      if (
+        payload.token_use !== 'access' ||
+        payload.client_id !== this.clientId
+      ) {
+        throw new Error(
+          'Token is not a Cognito access token for this app client',
+        );
+      }
+      return mapCognitoClaimsToPrincipal(payload);
+    } catch (error) {
+      this.logger.warn(
+        `Cognito token verification failed: ${(error as Error).message}`,
+      );
+      throw new UnauthorizedException('Invalid or expired access token');
+    }
+  }
+
+  async createUser(attributes: IUserAttributes): Promise<string> {
+    this.logger.log(`Creating user (Cognito): ${attributes.email}`);
+    const result = await this.client.send(
+      new AdminCreateUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: attributes.email,
+        UserAttributes: [
+          { Name: 'email', Value: attributes.email },
+          {
+            Name: 'email_verified',
+            Value: attributes.emailVerified ? 'true' : 'false',
+          },
+        ],
+      }),
+    );
+    const sub = result.User?.Attributes?.find(
+      (attribute) => attribute.Name === 'sub',
+    )?.Value;
+    return sub ?? result.User?.Username ?? attributes.email;
+  }
+
+  async disableUser(userId: string): Promise<void> {
+    this.logger.log(`Disabling user (Cognito): ${userId}`);
+    await this.client.send(
+      new AdminDisableUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: userId,
+      }),
+    );
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    this.logger.log(`Deleting user (Cognito): ${userId}`);
+    await this.client.send(
+      new AdminDeleteUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: userId,
+      }),
+    );
+  }
+
+  async updateUserAttributes(
+    userId: string,
+    attributes: Partial<IUserAttributes>,
+  ): Promise<void> {
+    this.logger.log(`Updating attributes (Cognito): ${userId}`);
+    const userAttributes: AttributeType[] = [];
+    if (attributes.email !== undefined) {
+      userAttributes.push({ Name: 'email', Value: attributes.email });
+    }
+    if (attributes.emailVerified !== undefined) {
+      userAttributes.push({
+        Name: 'email_verified',
+        Value: attributes.emailVerified ? 'true' : 'false',
+      });
+    }
+    if (userAttributes.length === 0) {
+      return;
+    }
+    await this.client.send(
+      new AdminUpdateUserAttributesCommand({
+        UserPoolId: this.userPoolId,
+        Username: userId,
+        UserAttributes: userAttributes,
+      }),
+    );
+  }
+
+  async resetPassword(userId: string): Promise<void> {
+    this.logger.log(`Triggering password reset (Cognito): ${userId}`);
+    await this.client.send(
+      new AdminResetUserPasswordCommand({
+        UserPoolId: this.userPoolId,
+        Username: userId,
+      }),
+    );
+  }
+
+  private toTokenSet(
+    result: AuthenticationResultType | undefined,
+    fallbackRefreshToken?: string,
+  ): ITokenSet {
+    if (!result?.AccessToken) {
+      throw new UnauthorizedException('Cognito did not return an access token');
+    }
+    return {
+      accessToken: result.AccessToken,
+      refreshToken: result.RefreshToken ?? fallbackRefreshToken ?? null,
+      expiresIn: result.ExpiresIn ?? 3600,
+    };
+  }
+}
