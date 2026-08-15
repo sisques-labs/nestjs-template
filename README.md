@@ -39,6 +39,7 @@ every subsequent one follows (see the `architecture` skill in
 |------|-------|-------|
 | Config + env validation | `src/core/config/` | Zod-validated env vars, CORS origin resolution |
 | Health checks | `src/core/health/` | `GET /api/health/live` (liveness), `GET /api/health/ready` (DB ping via `@nestjs/terminus`) |
+| Identity | `src/core/identity/` | Opt-in (`IDENTITY_PROVIDER`), provider-agnostic bridge (Cognito/Supabase/OIDC) — `POST /auth/login`+`/refresh`, `IdentityGuard`/`RolesGuard`/`@CurrentUser()`, see `src/core/identity/README.md` |
 | Logging | `src/support/logging/` | Winston via `@sisques-labs/nestjs-kit`, JSON file + console transports, plus an OTel transport forwarding to the pipeline below |
 | Kafka event forwarding | `@sisques-labs/nestjs-kit/messaging` (wired in `src/core/core.module.ts`); `src/core/messaging/` keeps only the app-local, auto-generated aggregate→topic map | Opt-in (`KAFKA_ENABLED`), no-op when disabled |
 | OpenTelemetry | `src/telemetry.ts` (bootstrap), `src/core/observability/` (CQRS spans+metrics) | Traces + metrics + logs exported via OTLP to a collector; all disabled together until `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Auto-instruments HTTP/Express, GraphQL, Postgres, Kafka; CQRS command/query buses get spans + duration/count metrics; every Winston log line is forwarded too (`@opentelemetry/winston-transport`), correlated with the active span. `docker-compose.yml` ships a local collector + Jaeger UI (`:16686`) + Prometheus UI (`:9090`) — logs currently just land in the collector's own output (no local log backend wired up yet; swap the `logs` exporter in `docker/otel-collector-config.yaml` for Loki or similar when ready) |
@@ -53,11 +54,14 @@ every subsequent one follows (see the `architecture` skill in
 These are common enough that they shouldn't be baked into every service, but
 specific enough that they'd bias the template toward one shape:
 
-- **Auth** (JWT/OAuth/sessions) and **multi-tenancy** — add what your service
-  actually needs; the MCP module's `contextBuilder` option (see
-  `McpModule.forRoot(...)` in `src/core/core.module.ts`, and `IMcpContextBuilder`
-  from `@sisques-labs/nestjs-kit/mcp`) and `src/core/filters/base-exception.filter.ts`
-  both have a documented extension point for when you do.
+- **Multi-tenancy** — add what your service actually needs;
+  `src/core/filters/base-exception.filter.ts` has a documented extension
+  point for tenant-aware exception handling when you do.
+- **Auth is opt-in, not absent** — `src/core/identity/` is a
+  provider-agnostic bridge (Cognito, Supabase, or any OIDC-compliant IdP)
+  that's inert until you set `IDENTITY_PROVIDER`. It's cross-cutting
+  infrastructure, not a bounded context: no local user table, the IdP is
+  always the source of truth. See `src/core/identity/README.md`.
 - **Bounded contexts / business domain** — this is infrastructure only.
 - **MongoDB** — `@sisques-labs/nestjs-kit/mongodb` is available if a service
   needs it alongside or instead of Postgres.
