@@ -100,4 +100,71 @@ describe('validateEnv', () => {
       /Environment validation failed:[\s\S]*OTEL_EXPORTER_OTLP_ENDPOINT/,
     );
   });
+
+  it('accepts IDENTITY_PROVIDER unset', () => {
+    expect(() => validateEnv(validEnv())).not.toThrow();
+  });
+
+  it('rejects an unsupported IDENTITY_PROVIDER value', () => {
+    const env = validEnv({ IDENTITY_PROVIDER: 'okta' });
+
+    expect(() => validateEnv(env)).toThrow(/Environment validation failed/);
+  });
+
+  it('rejects IDENTITY_PROVIDER=cognito without COGNITO_* vars', () => {
+    const env = validEnv({ IDENTITY_PROVIDER: 'cognito' });
+
+    expect(() => validateEnv(env)).toThrow(
+      /COGNITO_USER_POOL_ID is required when IDENTITY_PROVIDER is "cognito"/,
+    );
+  });
+
+  it('accepts IDENTITY_PROVIDER=cognito with all COGNITO_* vars set', () => {
+    const env = validEnv({
+      IDENTITY_PROVIDER: 'cognito',
+      COGNITO_USER_POOL_ID: 'us-east-1_abc123',
+      COGNITO_CLIENT_ID: 'client-id',
+      COGNITO_REGION: 'us-east-1',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
+
+  it('rejects IDENTITY_PROVIDER=supabase without SUPABASE_* vars', () => {
+    const env = validEnv({ IDENTITY_PROVIDER: 'supabase' });
+
+    expect(() => validateEnv(env)).toThrow(
+      /SUPABASE_URL is required when IDENTITY_PROVIDER is "supabase"/,
+    );
+  });
+
+  it('accepts IDENTITY_PROVIDER=supabase with all SUPABASE_* vars set', () => {
+    const env = validEnv({
+      IDENTITY_PROVIDER: 'supabase',
+      SUPABASE_URL: 'https://project.supabase.co',
+      SUPABASE_JWT_SECRET: 'secret',
+      SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
+
+  it('rejects IDENTITY_PROVIDER=oidc without OIDC_* vars', () => {
+    const env = validEnv({ IDENTITY_PROVIDER: 'oidc' });
+
+    expect(() => validateEnv(env)).toThrow(
+      /OIDC_ISSUER_URL is required when IDENTITY_PROVIDER is "oidc"/,
+    );
+  });
+
+  it('accepts IDENTITY_PROVIDER=oidc with all OIDC_* vars set', () => {
+    const env = validEnv({
+      IDENTITY_PROVIDER: 'oidc',
+      OIDC_ISSUER_URL: 'https://idp.example.com',
+      OIDC_CLIENT_ID: 'client-id',
+      OIDC_CLIENT_SECRET: 'client-secret',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
 });
