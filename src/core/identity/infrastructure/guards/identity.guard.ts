@@ -13,6 +13,7 @@ import {
   IIdentityProvider,
 } from '../../application/ports/identity-provider.port';
 import { IPrincipal } from '../../application/ports/principal.interface';
+import { extractBearerToken } from '../extract-bearer-token';
 import { REQUEST_PRINCIPAL_KEY } from './request-principal.constant';
 
 /**
@@ -30,7 +31,7 @@ export class IdentityGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = getRequest(context);
-    const token = extractBearerToken(request);
+    const token = extractBearerToken(request.headers.authorization);
     if (!token) {
       throw new UnauthorizedException('Missing bearer token');
     }
@@ -47,15 +48,6 @@ export function getRequest(context: ExecutionContext): Request {
       .req;
   }
   return context.switchToHttp().getRequest<Request>();
-}
-
-function extractBearerToken(request: Request): string | null {
-  const header = request.headers.authorization;
-  if (!header?.startsWith('Bearer ')) {
-    return null;
-  }
-  const token = header.slice('Bearer '.length).trim();
-  return token.length > 0 ? token : null;
 }
 
 function setPrincipal(request: Request, principal: IPrincipal): void {
