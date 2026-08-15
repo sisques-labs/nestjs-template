@@ -62,6 +62,7 @@ const baseEnvSchema = z
     SESSION_TTL_SECONDS: z.coerce.number().int().positive().optional(),
     OAUTH_REDIRECT_URI: z.string().optional(),
     OAUTH_SUCCESS_REDIRECT_URL: z.string().optional(),
+    TENANCY_ENABLED: z.enum(['true', 'false']).optional(),
   })
   .superRefine((env, ctx) => {
     if (env.KAFKA_ENABLED === 'true' && !env.KAFKA_BROKERS?.trim()) {
@@ -124,6 +125,14 @@ const baseEnvSchema = z
             'IDENTITY_PROVIDER is required when OAUTH_SESSION_ENABLED is "true"',
         });
       }
+    }
+
+    if (env.TENANCY_ENABLED === 'true' && !env.IDENTITY_PROVIDER) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['IDENTITY_PROVIDER'],
+        message: 'IDENTITY_PROVIDER is required when TENANCY_ENABLED is "true"',
+      });
     }
   });
 

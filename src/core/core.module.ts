@@ -8,6 +8,7 @@ import { HealthModule } from './health/health.module';
 import { IdentityModule } from './identity/identity.module';
 import { IdentityMcpContextBuilder } from './identity/infrastructure/mcp/identity-mcp-context-builder.service';
 import { ObservabilityModule } from './observability/observability.module';
+import { TenancyModule } from './tenancy/tenancy.module';
 import { PingResolver } from './transport/graphql/resolvers/ping.resolver';
 import './transport/graphql/registered-enums.graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -25,6 +26,7 @@ import { SupportModule } from '../support/support.module';
 // Cross-cutting infrastructure every bounded context relies on: config, DB,
 // transports, observability. Add new app-wide wiring here, not in AppModule.
 const IDENTITY_ENABLED = Boolean(process.env.IDENTITY_PROVIDER);
+const TENANCY_ENABLED = process.env.TENANCY_ENABLED === 'true';
 
 const CORE_MODULES = [
   SupportModule,
@@ -58,6 +60,10 @@ const CORE_MODULES = [
   // Inert unless IDENTITY_PROVIDER is set (see env.validation.ts) — no
   // guard is registered globally, so omitting it changes nothing.
   ...(IDENTITY_ENABLED ? [IdentityModule] : []),
+  // Inert unless TENANCY_ENABLED=true (see env.validation.ts, which also
+  // fails fast if it's set without IDENTITY_PROVIDER) — no guard is
+  // registered globally, so omitting it changes nothing.
+  ...(TENANCY_ENABLED ? [TenancyModule] : []),
   McpModule.forRoot({
     name: 'nestjs-template',
     version: '0.1.0',
