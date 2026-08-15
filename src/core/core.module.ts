@@ -5,6 +5,7 @@ import { otelConfig } from './config/otel.config';
 import { postgresConfig } from './config/postgres.config';
 import { AGGREGATE_MODULE_MAP } from './messaging/domain/topics/aggregate-module.map.generated';
 import { HealthModule } from './health/health.module';
+import { IdentityModule } from './identity/identity.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { PingResolver } from './transport/graphql/resolvers/ping.resolver';
 import './transport/graphql/registered-enums.graphql';
@@ -51,8 +52,9 @@ const CORE_MODULES = [
   ObservabilityModule,
   MessagingModule.forRoot({ aggregateModuleMap: AGGREGATE_MODULE_MAP }),
   HealthModule,
-  // No auth yet, so the default context builder (`{ requestId }`) is used —
-  // pass `contextBuilder` here once this service resolves an identity.
+  // Inert unless IDENTITY_PROVIDER is set (see env.validation.ts) — no
+  // guard is registered globally, so omitting it changes nothing.
+  ...(process.env.IDENTITY_PROVIDER ? [IdentityModule] : []),
   McpModule.forRoot({ name: 'nestjs-template', version: '0.1.0' }),
 ];
 
