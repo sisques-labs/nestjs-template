@@ -51,6 +51,7 @@ const baseEnvSchema = z
     OIDC_CLIENT_ID: z.string().optional(),
     OIDC_CLIENT_SECRET: z.string().optional(),
     OIDC_ROLE_CLAIM: z.string().optional(),
+    TENANCY_ENABLED: z.enum(['true', 'false']).optional(),
   })
   .superRefine((env, ctx) => {
     if (env.KAFKA_ENABLED === 'true' && !env.KAFKA_BROKERS?.trim()) {
@@ -83,6 +84,14 @@ const baseEnvSchema = z
         'OIDC_CLIENT_ID',
         'OIDC_CLIENT_SECRET',
       ]);
+    }
+
+    if (env.TENANCY_ENABLED === 'true' && !env.IDENTITY_PROVIDER) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['IDENTITY_PROVIDER'],
+        message: 'IDENTITY_PROVIDER is required when TENANCY_ENABLED is "true"',
+      });
     }
   });
 

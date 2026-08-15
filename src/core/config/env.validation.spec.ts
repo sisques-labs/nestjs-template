@@ -167,4 +167,24 @@ describe('validateEnv', () => {
 
     expect(() => validateEnv(env)).not.toThrow();
   });
+
+  it('rejects TENANCY_ENABLED=true without IDENTITY_PROVIDER', () => {
+    const env = validEnv({ TENANCY_ENABLED: 'true' });
+
+    expect(() => validateEnv(env)).toThrow(
+      /IDENTITY_PROVIDER is required when TENANCY_ENABLED is "true"/,
+    );
+  });
+
+  it('accepts TENANCY_ENABLED=true with IDENTITY_PROVIDER set', () => {
+    const env = validEnv({
+      TENANCY_ENABLED: 'true',
+      IDENTITY_PROVIDER: 'oidc',
+      OIDC_ISSUER_URL: 'https://idp.example.com',
+      OIDC_CLIENT_ID: 'client-id',
+      OIDC_CLIENT_SECRET: 'client-secret',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
 });
