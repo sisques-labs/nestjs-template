@@ -40,6 +40,17 @@ const baseEnvSchema = z
       .optional(),
     KAFKA_SASL_USERNAME: z.string().optional(),
     KAFKA_SASL_PASSWORD: z.string().optional(),
+    IDENTITY_PROVIDER: z.enum(['cognito', 'supabase', 'oidc']).optional(),
+    COGNITO_USER_POOL_ID: z.string().optional(),
+    COGNITO_CLIENT_ID: z.string().optional(),
+    COGNITO_REGION: z.string().optional(),
+    SUPABASE_URL: z.string().optional(),
+    SUPABASE_JWT_SECRET: z.string().optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+    OIDC_ISSUER_URL: z.string().optional(),
+    OIDC_CLIENT_ID: z.string().optional(),
+    OIDC_CLIENT_SECRET: z.string().optional(),
+    OIDC_ROLE_CLAIM: z.string().optional(),
   })
   .superRefine((env, ctx) => {
     if (env.KAFKA_ENABLED === 'true' && !env.KAFKA_BROKERS?.trim()) {
@@ -49,7 +60,48 @@ const baseEnvSchema = z
         message: 'KAFKA_BROKERS is required when KAFKA_ENABLED is "true"',
       });
     }
+
+    if (env.IDENTITY_PROVIDER === 'cognito') {
+      requireFields(ctx, env, [
+        'COGNITO_USER_POOL_ID',
+        'COGNITO_CLIENT_ID',
+        'COGNITO_REGION',
+      ]);
+    }
+
+    if (env.IDENTITY_PROVIDER === 'supabase') {
+      requireFields(ctx, env, [
+        'SUPABASE_URL',
+        'SUPABASE_JWT_SECRET',
+        'SUPABASE_SERVICE_ROLE_KEY',
+      ]);
+    }
+
+    if (env.IDENTITY_PROVIDER === 'oidc') {
+      requireFields(ctx, env, [
+        'OIDC_ISSUER_URL',
+        'OIDC_CLIENT_ID',
+        'OIDC_CLIENT_SECRET',
+      ]);
+    }
   });
+
+function requireFields(
+  ctx: z.RefinementCtx,
+  env: Record<string, unknown>,
+  fields: string[],
+): void {
+  for (const field of fields) {
+    const value = env[field];
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [field],
+        message: `${field} is required when IDENTITY_PROVIDER is "${String(env.IDENTITY_PROVIDER)}"`,
+      });
+    }
+  }
+}
 
 export function validateEnv(
   config: Record<string, unknown>,
