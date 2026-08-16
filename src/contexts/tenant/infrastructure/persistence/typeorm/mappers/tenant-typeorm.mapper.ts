@@ -60,11 +60,11 @@ export class TenantTypeOrmMapper extends BaseDatabaseMapper<
 
   toViewModel(entity: TenantEntity): TenantViewModel {
     this.logger.debug(`Mapping TenantEntity ${entity.id} to TenantViewModel`);
-    return new TenantViewModel({
-      id: entity.id,
-      externalId: entity.externalId,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
-    });
+    return this.tenantBuilder
+      .withId(entity.id)
+      .withExternalId(entity.externalId)
+      .withCreatedAt(entity.createdAt)
+      .withUpdatedAt(entity.updatedAt)
+      .buildViewModel();
   }
 }

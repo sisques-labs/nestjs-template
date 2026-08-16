@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   BaseDatabaseRepository,
@@ -43,9 +43,11 @@ export class TenantTypeOrmWriteRepository
     private readonly mapper: TenantTypeOrmMapper,
   ) {
     super();
+    this.logger = new Logger(TenantTypeOrmWriteRepository.name);
   }
 
   async findById(id: string): Promise<TenantAggregate | null> {
+    this.logger.debug(`Finding Tenant by id ${id}`);
     const entity = await this.repository.findOne({ where: { id } });
     return entity ? this.mapper.toAggregate(entity) : null;
   }
@@ -53,6 +55,7 @@ export class TenantTypeOrmWriteRepository
   async findByExternalId(
     externalId: TenantExternalIdValueObject,
   ): Promise<TenantAggregate | null> {
+    this.logger.debug(`Finding Tenant by externalId ${externalId.value}`);
     const entity = await this.repository.findOne({
       where: { externalId: externalId.value },
     });
@@ -62,6 +65,7 @@ export class TenantTypeOrmWriteRepository
   async findByCriteria(
     criteria: Criteria,
   ): Promise<PaginatedResult<TenantAggregate>> {
+    this.logger.debug('Finding Tenants by criteria');
     const { page, limit, skip } = await this.calculatePagination(criteria);
 
     const [entities, total] = await applyCriteriaToQueryBuilder(
@@ -85,12 +89,14 @@ export class TenantTypeOrmWriteRepository
   }
 
   async save(aggregate: TenantAggregate): Promise<TenantAggregate> {
+    this.logger.debug(`Saving Tenant ${aggregate.id.value}`);
     const entity = this.mapper.toPersistence(aggregate);
     const saved = await this.repository.save(entity);
     return this.mapper.toAggregate(saved);
   }
 
   async delete(id: string): Promise<void> {
+    this.logger.debug(`Deleting Tenant ${id}`);
     await this.repository.delete(id);
   }
 }

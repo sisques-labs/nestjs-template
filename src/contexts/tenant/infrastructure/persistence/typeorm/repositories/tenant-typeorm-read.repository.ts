@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   BaseDatabaseRepository,
@@ -33,9 +33,11 @@ export class TenantTypeOrmReadRepository
     private readonly mapper: TenantTypeOrmMapper,
   ) {
     super();
+    this.logger = new Logger(TenantTypeOrmReadRepository.name);
   }
 
   async findById(id: string): Promise<TenantViewModel | null> {
+    this.logger.debug(`Finding Tenant by id ${id}`);
     const entity = await this.repository.findOne({ where: { id } });
     return entity ? this.mapper.toViewModel(entity) : null;
   }
@@ -43,6 +45,7 @@ export class TenantTypeOrmReadRepository
   async findByCriteria(
     criteria: Criteria,
   ): Promise<PaginatedResult<TenantViewModel>> {
+    this.logger.debug('Finding Tenants by criteria');
     const { page, limit, skip } = await this.calculatePagination(criteria);
 
     const [entities, total] = await applyCriteriaToQueryBuilder(
@@ -66,6 +69,7 @@ export class TenantTypeOrmReadRepository
   }
 
   async save(viewModel: TenantViewModel): Promise<void> {
+    this.logger.debug(`Saving Tenant ${viewModel.id}`);
     await this.repository.save({
       id: viewModel.id,
       externalId: viewModel.externalId,
@@ -75,6 +79,7 @@ export class TenantTypeOrmReadRepository
   }
 
   async delete(id: string): Promise<void> {
+    this.logger.debug(`Deleting Tenant ${id}`);
     await this.repository.delete(id);
   }
 }
