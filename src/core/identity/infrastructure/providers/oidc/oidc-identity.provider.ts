@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import * as client from 'openid-client';
 
+import { IAuthorizationCodeExchange } from '../../../application/ports/authorization-code-exchange.interface';
+import { IAuthorizationUrlOptions } from '../../../application/ports/authorization-url-options.interface';
 import { IIdentityProvider } from '../../../application/ports/identity-provider.port';
 import { ILoginCredentials } from '../../../application/ports/login-credentials.interface';
 import { IPrincipal } from '../../../application/ports/principal.interface';
@@ -74,6 +76,38 @@ export class OidcIdentityProvider implements IIdentityProvider {
       );
       throw new UnauthorizedException('Invalid or expired access token');
     }
+  }
+
+  async getAuthorizationUrl(
+    options: IAuthorizationUrlOptions,
+  ): Promise<string> {
+    this.logger.log('Authorization URL requested (OIDC)');
+    const configuration = await this.getConfiguration();
+    return client.buildAuthorizationUrl(configuration, {
+      redirect_uri: options.redirectUri,
+      scope: 'openid profile email',
+      state: options.state,
+      code_challenge: options.codeChallenge,
+      code_challenge_method: 'S256',
+    }).href;
+  }
+
+  async exchangeAuthorizationCode(
+    options: IAuthorizationCodeExchange,
+  ): Promise<ITokenSet> {
+    this.logger.log('Authorization code exchange requested (OIDC)');
+    const configuration = await this.getConfiguration();
+    const tokens = await client.authorizationCodeGrant(
+      configuration,
+      new URL(
+        `${options.redirectUri}?code=${encodeURIComponent(options.code)}`,
+      ),
+      {
+        pkceCodeVerifier: options.codeVerifier,
+        expectedState: client.skipStateCheck,
+      },
+    );
+    return this.toTokenSet(tokens);
   }
 
   createUser(_attributes: IUserAttributes): Promise<string> {

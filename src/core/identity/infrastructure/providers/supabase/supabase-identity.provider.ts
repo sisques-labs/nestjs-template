@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { jwtVerify } from 'jose';
 
+import { IAuthorizationCodeExchange } from '../../../application/ports/authorization-code-exchange.interface';
+import { IAuthorizationUrlOptions } from '../../../application/ports/authorization-url-options.interface';
 import { IIdentityProvider } from '../../../application/ports/identity-provider.port';
 import { ILoginCredentials } from '../../../application/ports/login-credentials.interface';
 import { IPrincipal } from '../../../application/ports/principal.interface';
@@ -135,6 +137,39 @@ export class SupabaseIdentityProvider implements IIdentityProvider {
     if (error) {
       throw new Error(error.message);
     }
+  }
+
+  async getAuthorizationUrl(
+    options: IAuthorizationUrlOptions,
+  ): Promise<string> {
+    this.logger.log('Authorization URL requested (Supabase)');
+    const { data, error } = await this.client.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: options.redirectUri,
+        skipBrowserRedirect: true,
+        queryParams: { state: options.state },
+      },
+    });
+    if (error) {
+      throw new UnauthorizedException(error.message);
+    }
+    return data.url;
+  }
+
+  async exchangeAuthorizationCode(
+    options: IAuthorizationCodeExchange,
+  ): Promise<ITokenSet> {
+    this.logger.log('Authorization code exchange requested (Supabase)');
+    const { data, error } = await this.client.auth.exchangeCodeForSession(
+      options.code,
+    );
+    if (error || !data.session) {
+      throw new UnauthorizedException(
+        error?.message ?? 'Authorization code exchange failed',
+      );
+    }
+    return this.toTokenSet(data.session);
   }
 
   private toTokenSet(session: {
