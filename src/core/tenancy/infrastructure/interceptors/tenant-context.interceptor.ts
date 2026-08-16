@@ -20,17 +20,18 @@ import { getTenantId } from '../request-tenant-id.constant';
  * `Observable` — `run()` needs the actual handler invocation (triggered
  * by subscribing) to happen *synchronously inside its callback* for the
  * `AsyncLocalStorage` context to propagate through the handler's own
- * async operations (e.g. a `TenantScopedRepository` query). Verified
- * against a real Nest HTTP pipeline, including a nested `await` inside
- * the controller method, before relying on this.
+ * async operations (e.g. a query through a `createTenantScopedRepository()`
+ * -wrapped repository). Verified against a real Nest HTTP pipeline,
+ * including a nested `await` inside the controller method, before relying
+ * on this.
  *
  * Always pair with `TenantGuard`, which runs first and attaches the
  * tenant id this reads: `@UseGuards(IdentityGuard, TenantGuard)
  * @UseInterceptors(TenantContextInterceptor)`. If no tenant id is present
  * (guard misconfigured/omitted), this passes the request through
- * unscoped — `TenantScopedRepository` throws in that case rather than
- * running an unscoped query, so the failure surfaces there instead of
- * silently doing nothing here.
+ * unscoped — `TenantContextService.require()` throws in that case rather
+ * than letting a query run unscoped, so the failure surfaces there instead
+ * of silently doing nothing here.
  */
 @Injectable()
 export class TenantContextInterceptor implements NestInterceptor {

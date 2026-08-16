@@ -20,8 +20,10 @@ read it from) — missing that dependency fails application boot (see
   current tenant" during a request. `run<T>(tenantId, callback)` establishes
   the tenant id for a callback and everything it calls (including nested
   `await`s); `get()` reads it back, returning `undefined` outside any
-  `run()`. Deliberately a plain singleton, not a request-scoped provider —
-  see the doc comment on the class for why.
+  `run()`; `require()` does the same but throws `NoTenantContextException`
+  instead of returning `undefined` — what `createTenantScopedRepository()`
+  uses internally. Deliberately a plain singleton, not a request-scoped
+  provider — see the doc comment on the class for why.
 - **`TenantGuard`** — runs after `IdentityGuard`, reads `IPrincipal.tenantId`
   from the already-attached principal, dispatches
   `UpsertTenantFromClaimCommand` (lazy find-or-create), and attaches the
@@ -41,54 +43,69 @@ read it from) — missing that dependency fails application boot (see
   `canActivate()` does not reliably propagate into the route handler through
   Nest's RxJS-based guard/interceptor/handler composition; `run()` wrapping
   the handler invocation from the interceptor does.
-- **`TenantScopedRepository`** — abstract base class a future bounded
-  context's TypeORM repository extends instead of extending
-  `BaseDatabaseRepository` directly, to get every query automatically
-  filtered to the current tenant.
+- **`createTenantScopedRepository(repository, tenantContextService)`** — a
+  factory a future bounded context's TypeORM repository calls once, in its
+  constructor, to get a `Repository<Entity>` whose `findOne`/`find`/
+  `findAndCount`/`save`/`delete` are transparently scoped to the current
+  tenant.
 
-## `TenantScopedRepository`
+## `createTenantScopedRepository()`
 
-Read `tenant-scoped.repository.ts` for the full doc comments. In short:
+Read `create-tenant-scoped-repository.factory.ts` for the full doc
+comments. In short:
 
-- It extends `BaseDatabaseRepository` (from `@sisques-labs/nestjs-kit`, the
-  same base `TenantTypeOrmWriteRepository`/`TenantTypeOrmReadRepository` in
-  `src/contexts/tenant/` extend) — subclasses inherit `calculatePagination`
-  for free.
-- It exposes a protected `tenantScopedQueryBuilder(repository, alias)`
-  method: given a `Repository<Entity>` and an alias, it returns a
-  `SelectQueryBuilder<Entity>` with `{alias}.tenantId = :tenantId` already
-  applied, sourced from `TenantContextService.get()`.
-- If `TenantContextService.get()` returns `undefined` — no tenant context
-  present, e.g. called from a background job outside any guarded request —
-  it **throws immediately**, before building or returning any query
-  builder, rather than risk executing an unscoped query that could leak
-  every tenant's rows.
+- It wraps an `@InjectRepository`-supplied `Repository<Entity>` in a
+  `Proxy`. `findOne`/`find`/`findAndCount` get `tenantId` merged into their
+  `where`; `save` gets `tenantId` stamped onto the entity; `delete` gets
+  `tenantId` merged into its criteria (accepting both a bare id and a
+  criteria object, same as `Repository.delete()` itself). Every other
+  method (`count`, `createQueryBuilder`, ...) passes straight through via
+  `Reflect.get`.
+- The tenant id comes from `TenantContextService.require()`, which
+  **throws `NoTenantContextException` immediately** — before the wrapped
+  method ever runs — if no tenant context is present (e.g. called from a
+  background job outside any guarded request), rather than risk executing
+  an unscoped query that could leak every tenant's rows.
+- **`createQueryBuilder()` bypasses the proxy** — TypeORM builds a query
+  builder from the underlying connection, not through `Repository`'s own
+  `find*`/`save`/`delete` methods, so `Proxy` traps on those don't apply to
+  it. A repository method that needs `createQueryBuilder()` (e.g.
+  criteria-based pagination) must apply the tenant filter explicitly:
+  `.andWhere('{alias}.tenantId = :tenantId', { tenantId:
+  tenantContextService.require() })`.
 
-**Convention it depends on**: every entity that will extend this pattern
-must have a `tenantId: string` property (mapped via
-`@Column({ name: '...' })` to whatever the actual DB column is, e.g.
-`tenant_id`). Nothing in the type system enforces this — `ObjectLiteral`,
-the constraint TypeORM itself puts on `Repository`/`SelectQueryBuilder`,
-carries no field information — so this is a convention documented here and
-in the class's own doc comment, the same way other cross-context
-conventions in this template are enforced by documentation/review rather
-than generics.
+**Convention it depends on**: every entity scoped this way must have a
+`tenantId: string` property (mapped via `@Column({ name: '...' })` to
+whatever the actual DB column is, e.g. `tenant_id`). Nothing in the type
+system enforces this beyond the factory's own `Entity extends { tenantId:
+string }` constraint — so this is also a convention documented here and in
+the factory's own doc comment, the same way other cross-context
+conventions in this template are enforced by documentation/review.
 
 ### How a future context uses it
 
 ```ts
 @Injectable()
 export class OrderTypeOrmReadRepository
-  extends TenantScopedRepository
+  extends BaseDatabaseRepository
   implements IOrderReadRepository
 {
+  private readonly repository: Repository<OrderEntity>;
+
   constructor(
     @InjectRepository(OrderEntity)
-    private readonly repository: Repository<OrderEntity>,
+    rawRepository: Repository<OrderEntity>,
     private readonly mapper: OrderTypeOrmMapper,
-    tenantContextService: TenantContextService,
+    private readonly tenantContextService: TenantContextService,
   ) {
-    super(tenantContextService);
+    super();
+    this.repository = createTenantScopedRepository(rawRepository, tenantContextService);
+  }
+
+  async findById(id: string): Promise<OrderViewModel | null> {
+    // scoped automatically — no tenant filter to remember here
+    const entity = await this.repository.findOne({ where: { id } });
+    return entity ? this.mapper.toViewModel(entity) : null;
   }
 
   async findByCriteria(
@@ -96,11 +113,18 @@ export class OrderTypeOrmReadRepository
   ): Promise<PaginatedResult<OrderViewModel>> {
     const { page, limit, skip } = await this.calculatePagination(criteria);
 
-    const [entities, total] = await applyCriteriaToQueryBuilder(
-      this.tenantScopedQueryBuilder(this.repository, 'order'),
-      criteria,
-      { alias: 'order', defaultSort: { field: 'createdAt', direction: SortDirection.DESC } },
-    )
+    // createQueryBuilder bypasses the proxy, so the tenant filter is
+    // applied explicitly here — see the factory's doc comment.
+    const qb = this.repository
+      .createQueryBuilder('order')
+      .andWhere('order.tenantId = :tenantId', {
+        tenantId: this.tenantContextService.require(),
+      });
+
+    const [entities, total] = await applyCriteriaToQueryBuilder(qb, criteria, {
+      alias: 'order',
+      defaultSort: { field: 'createdAt', direction: SortDirection.DESC },
+    })
       .skip(skip)
       .take(limit)
       .getManyAndCount();
@@ -117,15 +141,15 @@ export class OrderTypeOrmReadRepository
 }
 ```
 
-### No context extends this yet
+### No context uses this yet
 
 This template still ships with `src/contexts/tenant/` as its only bounded
 context, and that context's own repositories (`TenantTypeOrmReadRepository`,
-`TenantTypeOrmWriteRepository`) do **not** extend `TenantScopedRepository` —
-the `tenants` table has no `tenant_id` column, since a `Tenant` row *is* the
-tenant, not something scoped to one. `TenantScopedRepository` is
-documentation and a base class waiting for the first tenant-owned context
-(e.g. a future `Order` or `User` context) to extend it — not a retrofit of
+`TenantTypeOrmWriteRepository`) do **not** use
+`createTenantScopedRepository()` — the `tenants` table has no `tenant_id`
+column, since a `Tenant` row *is* the tenant, not something scoped to one.
+It's documentation and a factory waiting for the first tenant-owned context
+(e.g. a future `Order` or `User` context) to call it — not a retrofit of
 anything existing.
 
 ## Design notes / follow-ups
