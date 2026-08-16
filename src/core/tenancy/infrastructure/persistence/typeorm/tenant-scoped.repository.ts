@@ -3,6 +3,7 @@ import { BaseDatabaseRepository } from '@sisques-labs/nestjs-kit';
 import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { TenantContextService } from '../../../application/services/tenant-context.service';
+import { NoTenantContextException } from '../../exceptions/no-tenant-context.exception';
 
 /**
  * Abstract base class for TypeORM repositories that must never return rows
@@ -60,13 +61,7 @@ export abstract class TenantScopedRepository extends BaseDatabaseRepository {
     const tenantId = this.tenantContextService.get();
 
     if (!tenantId) {
-      throw new Error(
-        'TenantScopedRepository: no tenant context present. ' +
-          'This method must only be called from within a request scoped by ' +
-          'TenantGuard + TenantContextInterceptor (or another caller that ' +
-          'has established one via TenantContextService.run()) — refusing ' +
-          'to build an unscoped query that could leak every tenant’s rows.',
-      );
+      throw new NoTenantContextException();
     }
 
     return repository

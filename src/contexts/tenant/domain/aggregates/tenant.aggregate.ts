@@ -1,11 +1,9 @@
-import {
-  BaseAggregate,
-  DateValueObject,
-  UuidValueObject,
-} from '@sisques-labs/nestjs-kit';
+import { BaseAggregate } from '@sisques-labs/nestjs-kit';
 import { TenantCreatedEvent } from '@contexts/tenant/domain/events/tenant-created/tenant-created.event';
+import { ITenant } from '@contexts/tenant/domain/interfaces/tenant.interface';
 import { TenantPrimitives } from '@contexts/tenant/domain/primitives/tenant.primitives';
 import { TenantExternalIdValueObject } from '@contexts/tenant/domain/value-objects/tenant-external-id/tenant-external-id.vo';
+import { TenantIdValueObject } from '@contexts/tenant/domain/value-objects/tenant-id/tenant-id.vo';
 
 /**
  * `Tenant` — this template's first bounded-context aggregate. Deliberately
@@ -13,24 +11,23 @@ import { TenantExternalIdValueObject } from '@contexts/tenant/domain/value-objec
  * `status` field or other data (see `add-tenant-context` proposal).
  */
 export class TenantAggregate extends BaseAggregate {
-  private readonly _id: UuidValueObject;
+  private readonly _id: TenantIdValueObject;
   private readonly _externalId: TenantExternalIdValueObject;
 
   /**
-   * Hydration only — never emits domain events. Use `TenantBuilder` to
-   * construct an instance, then call `create()` explicitly when the
-   * aggregate represents a genuinely new `Tenant`.
+   * Hydration only — never emits domain events. Takes an already-VO-wrapped
+   * `ITenant` and just assigns it; primitive→VO conversion happens in
+   * `TenantBuilder.build()`, not here. Use `TenantBuilder` to construct an
+   * instance, then call `create()` explicitly when the aggregate represents
+   * a genuinely new `Tenant`.
    */
-  constructor(primitives: TenantPrimitives) {
-    super(
-      new DateValueObject(primitives.createdAt),
-      new DateValueObject(primitives.updatedAt),
-    );
-    this._id = new UuidValueObject(primitives.id);
-    this._externalId = new TenantExternalIdValueObject(primitives.externalId);
+  constructor(tenant: ITenant) {
+    super(tenant.createdAt, tenant.updatedAt);
+    this._id = tenant.id;
+    this._externalId = tenant.externalId;
   }
 
-  get id(): UuidValueObject {
+  get id(): TenantIdValueObject {
     return this._id;
   }
 
