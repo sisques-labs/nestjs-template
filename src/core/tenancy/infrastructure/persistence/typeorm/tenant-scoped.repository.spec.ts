@@ -1,6 +1,7 @@
 import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { TenantContextService } from '../../../application/services/tenant-context.service';
+import { NoTenantContextException } from '../../exceptions/no-tenant-context.exception';
 import { TenantScopedRepository } from './tenant-scoped.repository';
 
 interface TestEntity extends ObjectLiteral {
@@ -91,6 +92,9 @@ describe('TenantScopedRepository', () => {
       const queryBuilder = buildFakeQueryBuilder();
       const mockRepository = buildMockRepository(queryBuilder);
 
+      expect(() => repository.query(mockRepository)).toThrow(
+        NoTenantContextException,
+      );
       expect(() => repository.query(mockRepository)).toThrow(
         /no tenant context/i,
       );
