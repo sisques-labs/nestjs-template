@@ -1,12 +1,12 @@
 # Design: OAuth/social login via a BFF session
 
-## Open question: session store — Redis vs Postgres
+## Decided: session store — Redis
 
-This proposal's default is **Redis**, but this is flagged explicitly
-because it is the one new piece of infrastructure this change requires
-either way, and the repo currently has none (`docker-compose.yml` ships
-only Postgres + the OTel collector; `package.json` has no `ioredis`, no
-`connect-redis`, nothing session-shaped).
+**Resolved: Redis.** This was flagged explicitly because it is the one new
+piece of infrastructure this change requires either way, and the repo
+currently has none (`docker-compose.yml` ships only Postgres + the OTel
+collector; `package.json` has no `ioredis`, no `connect-redis`, nothing
+session-shaped) — confirmed with the requester before implementation.
 
 | | Redis (proposed) | Postgres (`session` table) |
 |---|---|---|
@@ -18,18 +18,10 @@ only Postgres + the OTel collector; `package.json` has no `ioredis`, no
 
 Redis is the standard choice for this exact workload (this is what
 "session store" means in most production BFF write-ups), and is what this
-design assumes throughout. But for a **template** specifically — where the
-goal is minimizing what every downstream service has to stand up — a
-Postgres-backed `ISessionStore` adapter with a short TTL and a cheap
-periodic cleanup (or `pg_cron`) is a real alternative, at the cost of extra
-write load on the app DB and no native expiry.
-
-**This needs a decision before/during implementation** (task 1.1 depends on
-it): ship the Redis adapter as designed below, or swap it for a Postgres
-one. The `ISessionStore` port is identical either way, so this only
-affects `infrastructure/session/redis-session.store.ts` vs a
-`postgres-session.store.ts` equivalent and the new `docker-compose.yml`
-service — nothing else in this design changes.
+design assumes throughout — confirmed as the choice to implement. The
+`ISessionStore` port keeps a Postgres-backed adapter possible later without
+touching anything else in this design, but only the Redis adapter ships in
+this change.
 
 ## Layout
 
