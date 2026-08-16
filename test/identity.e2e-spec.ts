@@ -23,7 +23,7 @@ const ADMIN_PRINCIPAL: IPrincipal = {
   sub: 'user-1',
   email: 'admin@example.com',
   roles: [Role.ADMIN],
-  tenantId: null,
+  tenantIds: [],
 };
 
 /**
