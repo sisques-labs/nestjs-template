@@ -47,5 +47,21 @@ services:
     depends_on:
       - otel-collector
 
+  # Session store for OAuth/BFF login (src/core/identity/) — optional, only
+  # needed when OAUTH_SESSION_ENABLED=true. Point the app at it with
+  # SESSION_REDIS_URL=redis://localhost:6379
+  # redis:
+  #   image: redis:8-alpine
+  #   ports:
+  #     - '6379:6379'
+  #   volumes:
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: ['CMD', 'redis-cli', 'ping']
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+
 volumes:
   postgres_data:
+  # redis_data:

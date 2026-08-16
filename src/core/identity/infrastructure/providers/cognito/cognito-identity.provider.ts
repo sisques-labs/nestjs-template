@@ -14,6 +14,8 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
+import { IAuthorizationCodeExchange } from '../../../application/ports/authorization-code-exchange.interface';
+import { IAuthorizationUrlOptions } from '../../../application/ports/authorization-url-options.interface';
 import { IIdentityProvider } from '../../../application/ports/identity-provider.port';
 import { ILoginCredentials } from '../../../application/ports/login-credentials.interface';
 import { IPrincipal } from '../../../application/ports/principal.interface';
@@ -30,11 +32,13 @@ export class CognitoIdentityProvider implements IIdentityProvider {
   private readonly clientId: string;
   private readonly issuer: string;
   private readonly jwks: ReturnType<typeof createRemoteJWKSet>;
+  private readonly hostedUiDomain: string;
 
   constructor(config: ConfigService) {
     const region = config.getOrThrow<string>('COGNITO_REGION');
     this.userPoolId = config.getOrThrow<string>('COGNITO_USER_POOL_ID');
     this.clientId = config.getOrThrow<string>('COGNITO_CLIENT_ID');
+    this.hostedUiDomain = config.getOrThrow<string>('COGNITO_HOSTED_UI_DOMAIN');
     this.client = new CognitoIdentityProviderClient({ region });
     this.issuer = `https://cognito-idp.${region}.amazonaws.com/${this.userPoolId}`;
     this.jwks = createRemoteJWKSet(
@@ -169,6 +173,60 @@ export class CognitoIdentityProvider implements IIdentityProvider {
         Username: userId,
       }),
     );
+  }
+
+  async getAuthorizationUrl(
+    options: IAuthorizationUrlOptions,
+  ): Promise<string> {
+    this.logger.log('Authorization URL requested (Cognito)');
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: this.clientId,
+      redirect_uri: options.redirectUri,
+      state: options.state,
+      code_challenge: options.codeChallenge,
+      code_challenge_method: 'S256',
+      scope: 'openid profile email',
+    });
+    return `https://${this.hostedUiDomain}/oauth2/authorize?${params.toString()}`;
+  }
+
+  async exchangeAuthorizationCode(
+    options: IAuthorizationCodeExchange,
+  ): Promise<ITokenSet> {
+    this.logger.log('Authorization code exchange requested (Cognito)');
+    const response = await fetch(
+      `https://${this.hostedUiDomain}/oauth2/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: this.clientId,
+          code: options.code,
+          redirect_uri: options.redirectUri,
+          code_verifier: options.codeVerifier,
+        }),
+      },
+    );
+    if (!response.ok) {
+      this.logger.warn(
+        `Cognito authorization code exchange failed: ${response.status} ${response.statusText}`,
+      );
+      throw new UnauthorizedException(
+        'Failed to exchange authorization code with Cognito',
+      );
+    }
+    const body = (await response.json()) as {
+      access_token: string;
+      refresh_token?: string;
+      expires_in?: number;
+    };
+    return {
+      accessToken: body.access_token,
+      refreshToken: body.refresh_token ?? null,
+      expiresIn: body.expires_in ?? 3600,
+    };
   }
 
   private toTokenSet(

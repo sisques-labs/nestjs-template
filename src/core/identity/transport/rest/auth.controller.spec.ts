@@ -11,6 +11,8 @@ function buildIdentityProvider(): jest.Mocked<IIdentityProvider> {
     deleteUser: jest.fn(),
     updateUserAttributes: jest.fn(),
     resetPassword: jest.fn(),
+    getAuthorizationUrl: jest.fn(),
+    exchangeAuthorizationCode: jest.fn(),
   };
 }
 

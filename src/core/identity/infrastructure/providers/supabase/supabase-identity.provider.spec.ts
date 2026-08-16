@@ -4,6 +4,8 @@ import { UnauthorizedException } from '@nestjs/common';
 const auth = {
   signInWithPassword: jest.fn(),
   refreshSession: jest.fn(),
+  signInWithOAuth: jest.fn(),
+  exchangeCodeForSession: jest.fn(),
   admin: {
     createUser: jest.fn(),
     updateUserById: jest.fn(),
@@ -187,5 +189,88 @@ describe('SupabaseIdentityProvider', () => {
     await expect(provider.deleteUser('missing')).rejects.toThrow(
       'User not found',
     );
+  });
+
+  it('getAuthorizationUrl() returns the provider-built OAuth URL', async () => {
+    auth.signInWithOAuth.mockResolvedValueOnce({
+      data: { url: 'https://project.supabase.co/auth/v1/authorize?...' },
+      error: null,
+    });
+    const provider = new SupabaseIdentityProvider(buildConfig());
+
+    const url = await provider.getAuthorizationUrl({
+      redirectUri: 'https://app.example.com/auth/oauth/callback',
+      state: 'the-state',
+      codeChallenge: 'the-challenge',
+    });
+
+    expect(url).toBe('https://project.supabase.co/auth/v1/authorize?...');
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://app.example.com/auth/oauth/callback',
+        skipBrowserRedirect: true,
+        queryParams: { state: 'the-state' },
+      },
+    });
+  });
+
+  it('getAuthorizationUrl() throws UnauthorizedException on provider error', async () => {
+    auth.signInWithOAuth.mockResolvedValueOnce({
+      data: { url: null },
+      error: { message: 'OAuth provider not configured' },
+    });
+    const provider = new SupabaseIdentityProvider(buildConfig());
+
+    await expect(
+      provider.getAuthorizationUrl({
+        redirectUri: 'https://app.example.com/auth/oauth/callback',
+        state: 'the-state',
+        codeChallenge: 'the-challenge',
+      }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('exchangeAuthorizationCode() returns a token set on success', async () => {
+    auth.exchangeCodeForSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'access',
+          refresh_token: 'refresh',
+          expires_in: 3600,
+        },
+      },
+      error: null,
+    });
+    const provider = new SupabaseIdentityProvider(buildConfig());
+
+    const result = await provider.exchangeAuthorizationCode({
+      code: 'the-code',
+      redirectUri: 'https://app.example.com/auth/oauth/callback',
+      codeVerifier: 'the-verifier',
+    });
+
+    expect(result).toEqual({
+      accessToken: 'access',
+      refreshToken: 'refresh',
+      expiresIn: 3600,
+    });
+    expect(auth.exchangeCodeForSession).toHaveBeenCalledWith('the-code');
+  });
+
+  it('exchangeAuthorizationCode() throws UnauthorizedException on provider error', async () => {
+    auth.exchangeCodeForSession.mockResolvedValueOnce({
+      data: { session: null },
+      error: { message: 'Invalid authorization code' },
+    });
+    const provider = new SupabaseIdentityProvider(buildConfig());
+
+    await expect(
+      provider.exchangeAuthorizationCode({
+        code: 'bad-code',
+        redirectUri: 'https://app.example.com/auth/oauth/callback',
+        codeVerifier: 'the-verifier',
+      }),
+    ).rejects.toThrow(UnauthorizedException);
   });
 });
