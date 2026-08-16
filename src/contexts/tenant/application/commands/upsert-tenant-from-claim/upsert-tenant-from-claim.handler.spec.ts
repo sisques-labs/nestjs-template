@@ -2,9 +2,8 @@ import { EventBus } from '@nestjs/cqrs';
 
 import { UpsertTenantFromClaimCommand } from '@contexts/tenant/application/commands/upsert-tenant-from-claim/upsert-tenant-from-claim.command';
 import { UpsertTenantFromClaimHandler } from '@contexts/tenant/application/commands/upsert-tenant-from-claim/upsert-tenant-from-claim.handler';
-import { TenantAggregate } from '@contexts/tenant/domain/aggregates/tenant.aggregate';
+import { FindOrCreateTenantByExternalIdService } from '@contexts/tenant/application/services/write/find-or-create-tenant-by-external-id.service';
 import { TenantBuilder } from '@contexts/tenant/domain/builders/tenant.builder';
-import { ITenantWriteRepository } from '@contexts/tenant/domain/repositories/write/tenant-write.repository';
 
 function buildEventBusMock(): jest.Mocked<EventBus> {
   return {
@@ -12,63 +11,64 @@ function buildEventBusMock(): jest.Mocked<EventBus> {
   } as unknown as jest.Mocked<EventBus>;
 }
 
-function buildWriteRepositoryMock(): jest.Mocked<ITenantWriteRepository> {
+function buildFindOrCreateServiceMock(): jest.Mocked<FindOrCreateTenantByExternalIdService> {
   return {
-    findById: jest.fn(),
-    findByCriteria: jest.fn(),
-    save: jest.fn(),
-    delete: jest.fn(),
-    findByExternalId: jest.fn(),
-  };
+    execute: jest.fn(),
+  } as unknown as jest.Mocked<FindOrCreateTenantByExternalIdService>;
 }
 
 describe('UpsertTenantFromClaimHandler', () => {
   let eventBus: jest.Mocked<EventBus>;
-  let tenantWriteRepository: jest.Mocked<ITenantWriteRepository>;
+  let findOrCreateTenantByExternalIdService: jest.Mocked<FindOrCreateTenantByExternalIdService>;
   let handler: UpsertTenantFromClaimHandler;
 
   beforeEach(() => {
     eventBus = buildEventBusMock();
-    tenantWriteRepository = buildWriteRepositoryMock();
-    handler = new UpsertTenantFromClaimHandler(eventBus, tenantWriteRepository);
+    findOrCreateTenantByExternalIdService = buildFindOrCreateServiceMock();
+    handler = new UpsertTenantFromClaimHandler(
+      eventBus,
+      findOrCreateTenantByExternalIdService,
+    );
   });
 
-  it('returns the existing tenant id and does not write when one already exists for the externalId', async () => {
+  it('returns the existing tenant id and does not publish events when the service resolves an already-existing tenant', async () => {
     const existing = new TenantBuilder()
       .withId('5f8d0d55-1c3a-4b7e-9a2f-3b6d1e0c9a11')
       .withExternalId('idp-tenant-external-id')
       .withCreatedAt(new Date('2026-01-01T00:00:00.000Z'))
       .withUpdatedAt(new Date('2026-01-01T00:00:00.000Z'))
       .build();
-    tenantWriteRepository.findByExternalId.mockResolvedValue(existing);
+    findOrCreateTenantByExternalIdService.execute.mockResolvedValue(existing);
 
     const command = new UpsertTenantFromClaimCommand({
       externalId: 'idp-tenant-external-id',
     });
     const result = await handler.execute(command);
 
+    expect(findOrCreateTenantByExternalIdService.execute).toHaveBeenCalledWith(
+      command.externalId,
+    );
     expect(result).toBe(existing.id.value);
-    expect(tenantWriteRepository.save).not.toHaveBeenCalled();
     expect(eventBus.publishAll).not.toHaveBeenCalled();
   });
 
-  it('creates a new tenant, persists it, publishes its events, and returns the new id when none exists', async () => {
-    tenantWriteRepository.findByExternalId.mockResolvedValue(null);
-    tenantWriteRepository.save.mockImplementation(
-      (aggregate: TenantAggregate) => Promise.resolve(aggregate),
-    );
+  it('publishes events and returns the new id when the service resolves a newly created tenant', async () => {
+    const created = new TenantBuilder()
+      .withId('5f8d0d55-1c3a-4b7e-9a2f-3b6d1e0c9a12')
+      .withExternalId('new-idp-tenant-external-id')
+      .withCreatedAt(new Date('2026-01-01T00:00:00.000Z'))
+      .withUpdatedAt(new Date('2026-01-01T00:00:00.000Z'))
+      .build();
+    created.create();
+    findOrCreateTenantByExternalIdService.execute.mockResolvedValue(created);
 
     const command = new UpsertTenantFromClaimCommand({
       externalId: 'new-idp-tenant-external-id',
     });
     const result = await handler.execute(command);
 
-    expect(tenantWriteRepository.save).toHaveBeenCalledTimes(1);
-    const savedAggregate = tenantWriteRepository.save.mock
-      .calls[0][0] as TenantAggregate;
-    expect(savedAggregate.externalId.value).toBe('new-idp-tenant-external-id');
-    expect(result).toBe(savedAggregate.id.value);
+    expect(result).toBe(created.id.value);
     expect(eventBus.publishAll).toHaveBeenCalledTimes(1);
-    expect(savedAggregate.getUncommittedEvents()).toHaveLength(0);
+    expect(created.getUncommittedEvents()).toHaveLength(0);
   });
 });

@@ -1,9 +1,15 @@
+import { TenantPrimitives } from '@contexts/tenant/domain/primitives/tenant.primitives';
 import { TenantExternalIdValueObject } from '@contexts/tenant/domain/value-objects/tenant-external-id/tenant-external-id.vo';
 
-/** Primitive input the caller (`TenantGuard`, in a later layer) supplies. */
-export interface UpsertTenantFromClaimCommandInput {
-  externalId: string;
-}
+/**
+ * Primitive input the caller (`TenantGuard`, in a later layer) supplies.
+ * Derived from `TenantPrimitives` via `Pick` instead of hand-declared, so
+ * this stays in sync with the aggregate's actual field set automatically.
+ */
+export type UpsertTenantFromClaimCommandInput = Pick<
+  TenantPrimitives,
+  'externalId'
+>;
 
 /**
  * Finds or creates a `Tenant` for the IdP-supplied `externalId` claim.
