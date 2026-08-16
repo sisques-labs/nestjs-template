@@ -31,7 +31,7 @@ domain).
     OIDC-compliant IdP without a dedicated adapter).
   - A provider factory that resolves the single active adapter at boot from
     an `IDENTITY_PROVIDER` env var (`cognito` | `supabase` | `oidc`).
-  - `IPrincipal` (normalized `sub`/`email`/`roles`/`tenantId`) and a shared
+  - `IPrincipal` (normalized `sub`/`email`/`roles`/`tenantIds`) and a shared
     `Role` enum, with each adapter mapping its provider's raw claims
     (`cognito:groups`, `app_metadata.roles`, a configurable OIDC claim) onto
     it.

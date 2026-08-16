@@ -69,9 +69,12 @@ signature verification.
 ### Requirement: Principal normalization
 
 `IIdentityProvider.verifyToken()` MUST return an `IPrincipal` with a
-provider-agnostic shape (`sub`, `email`, `roles`, `tenantId`) regardless of
+provider-agnostic shape (`sub`, `email`, `roles`, `tenantIds`) regardless of
 which adapter is active, translating each provider's raw claim shape via
-that provider's own claims mapper.
+that provider's own claims mapper. `tenantIds` MUST be every tenant the
+verified token proves the principal belongs to (an empty array when the
+token carries no tenant claim) — a principal MAY belong to more than one
+tenant.
 
 #### Scenario: Cognito claims mapped to IPrincipal
 
