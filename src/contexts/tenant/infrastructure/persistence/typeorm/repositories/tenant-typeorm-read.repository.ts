@@ -68,18 +68,11 @@ export class TenantTypeOrmReadRepository
     );
   }
 
-  async save(viewModel: TenantViewModel): Promise<void> {
-    this.logger.debug(`Saving Tenant ${viewModel.id}`);
-    await this.repository.save({
-      id: viewModel.id,
-      externalId: viewModel.externalId,
-      createdAt: viewModel.createdAt,
-      updatedAt: viewModel.updatedAt,
-    });
+  async save(_viewModel: TenantViewModel): Promise<void> {
+    // read-side projection — write side handles persistence
   }
 
-  async delete(id: string): Promise<void> {
-    this.logger.debug(`Deleting Tenant ${id}`);
-    await this.repository.delete(id);
+  async delete(_id: string): Promise<void> {
+    // read-side projection — write side handles persistence
   }
 }

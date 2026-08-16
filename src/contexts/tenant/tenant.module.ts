@@ -37,5 +37,6 @@ const INFRASTRUCTURE_ENTITIES = [TenantEntity];
     ...INFRASTRUCTURE_REPOSITORIES,
     ...INFRASTRUCTURE_MAPPERS,
   ],
+  exports: [],
 })
 export class TenantModule {}
