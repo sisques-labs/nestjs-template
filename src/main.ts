@@ -10,7 +10,13 @@ import { AppModule } from './app.module';
 import { BaseExceptionFilter } from './core/filters/base-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  // rawBody: true lets the payments Stripe webhook controller read
+  // req.rawBody for signature verification without disabling the global
+  // JSON body parser for every other route.
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    rawBody: true,
+  });
   app.enableShutdownHooks();
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
