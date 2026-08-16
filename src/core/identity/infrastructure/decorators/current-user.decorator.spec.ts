@@ -17,7 +17,7 @@ describe('currentUserFactory', () => {
       sub: 'user-123',
       email: 'user@example.com',
       roles: [],
-      tenantId: null,
+      tenantIds: [],
     };
     const context = buildContext({
       headers: {},
