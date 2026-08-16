@@ -4,11 +4,18 @@ import { UnauthorizedException } from '@nestjs/common';
 const discovery = jest.fn();
 const genericGrantRequest = jest.fn();
 const refreshTokenGrant = jest.fn();
+const buildAuthorizationUrl = jest.fn();
+const authorizationCodeGrant = jest.fn();
+const skipStateCheck = Symbol('skipStateCheck');
 
 jest.mock('openid-client', () => ({
   discovery: (...args: unknown[]) => discovery(...args),
   genericGrantRequest: (...args: unknown[]) => genericGrantRequest(...args),
   refreshTokenGrant: (...args: unknown[]) => refreshTokenGrant(...args),
+  buildAuthorizationUrl: (...args: unknown[]) => buildAuthorizationUrl(...args),
+  authorizationCodeGrant: (...args: unknown[]) =>
+    authorizationCodeGrant(...args),
+  skipStateCheck,
 }));
 
 const jwtVerify = jest.fn();
@@ -34,13 +41,15 @@ function buildConfig(
   } as unknown as jest.Mocked<ConfigService>;
 }
 
+const configurationStub = {
+  serverMetadata: () => ({
+    issuer: 'https://idp.example.com',
+    jwks_uri: 'https://idp.example.com/jwks',
+  }),
+};
+
 function fakeConfiguration() {
-  return {
-    serverMetadata: () => ({
-      issuer: 'https://idp.example.com',
-      jwks_uri: 'https://idp.example.com/jwks',
-    }),
-  };
+  return configurationStub;
 }
 
 describe('OidcIdentityProvider', () => {
@@ -135,5 +144,73 @@ describe('OidcIdentityProvider', () => {
     await expect(invoke()).rejects.toThrow(
       /not supported by the generic OIDC adapter/,
     );
+  });
+
+  describe('getAuthorizationUrl()', () => {
+    it('builds the authorization URL via openid-client', async () => {
+      buildAuthorizationUrl.mockReturnValueOnce(
+        new URL('https://idp.example.com/authorize?state=the-state'),
+      );
+      const provider = new OidcIdentityProvider(buildConfig());
+
+      const url = await provider.getAuthorizationUrl({
+        redirectUri: 'https://app.example.com/auth/oauth/callback',
+        state: 'the-state',
+        codeChallenge: 'the-challenge',
+      });
+
+      expect(url).toBe('https://idp.example.com/authorize?state=the-state');
+      expect(buildAuthorizationUrl).toHaveBeenCalledWith(fakeConfiguration(), {
+        redirect_uri: 'https://app.example.com/auth/oauth/callback',
+        scope: 'openid profile email',
+        state: 'the-state',
+        code_challenge: 'the-challenge',
+        code_challenge_method: 'S256',
+      });
+    });
+  });
+
+  describe('exchangeAuthorizationCode()', () => {
+    it('performs the authorization code grant and returns a token set', async () => {
+      authorizationCodeGrant.mockResolvedValueOnce({
+        access_token: 'access',
+        refresh_token: 'refresh',
+        expires_in: 3600,
+      });
+      const provider = new OidcIdentityProvider(buildConfig());
+
+      const result = await provider.exchangeAuthorizationCode({
+        code: 'the-code',
+        redirectUri: 'https://app.example.com/auth/oauth/callback',
+        codeVerifier: 'the-verifier',
+      });
+
+      expect(result).toEqual({
+        accessToken: 'access',
+        refreshToken: 'refresh',
+        expiresIn: 3600,
+      });
+      expect(authorizationCodeGrant).toHaveBeenCalledWith(
+        fakeConfiguration(),
+        new URL('https://app.example.com/auth/oauth/callback?code=the-code'),
+        {
+          pkceCodeVerifier: 'the-verifier',
+          expectedState: skipStateCheck,
+        },
+      );
+    });
+
+    it('throws UnauthorizedException when the grant fails', async () => {
+      authorizationCodeGrant.mockRejectedValueOnce(new Error('invalid_grant'));
+      const provider = new OidcIdentityProvider(buildConfig());
+
+      await expect(
+        provider.exchangeAuthorizationCode({
+          code: 'bad-code',
+          redirectUri: 'https://app.example.com/auth/oauth/callback',
+          codeVerifier: 'the-verifier',
+        }),
+      ).rejects.toThrow('invalid_grant');
+    });
   });
 });

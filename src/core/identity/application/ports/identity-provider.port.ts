@@ -1,3 +1,5 @@
+import { IAuthorizationCodeExchange } from './authorization-code-exchange.interface';
+import { IAuthorizationUrlOptions } from './authorization-url-options.interface';
 import { ILoginCredentials } from './login-credentials.interface';
 import { IPrincipal } from './principal.interface';
 import { ITokenSet } from './token-set.interface';
@@ -26,4 +28,21 @@ export interface IIdentityProvider {
     attributes: Partial<IUserAttributes>,
   ): Promise<void>;
   resetPassword(userId: string): Promise<void>;
+
+  /**
+   * Builds the redirect URL for `GET /auth/oauth/start` — the provider's
+   * authorization endpoint (Cognito Hosted UI, Supabase `signInWithOAuth`,
+   * or the OIDC issuer's `/authorize`), carrying `state` and the PKCE
+   * `code_challenge`.
+   */
+  getAuthorizationUrl(options: IAuthorizationUrlOptions): Promise<string>;
+
+  /**
+   * Exchanges the authorization `code` returned to `GET /auth/oauth/callback`
+   * for a token set, verifying the PKCE `code_verifier` against the
+   * `code_challenge` sent in `getAuthorizationUrl()`.
+   */
+  exchangeAuthorizationCode(
+    options: IAuthorizationCodeExchange,
+  ): Promise<ITokenSet>;
 }
