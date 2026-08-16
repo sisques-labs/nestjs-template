@@ -26,24 +26,33 @@ without `IDENTITY_PROVIDER` also being set, since `TenantGuard` has no
 ### Requirement: Tenant resolution on a guarded request
 
 `TenantGuard`, applied after `IdentityGuard`, MUST resolve the current
-request's tenant from the attached `IPrincipal.tenantId`, upsert the
-corresponding `Tenant` via `UpsertTenantFromClaimCommand`, and make the
-result available to the rest of the request through
-`TenantContextService`.
+request's tenant from the attached `IPrincipal.tenantIds` — optionally
+narrowed by an `X-Tenant-Id` request header when the principal belongs to
+more than one tenant — upsert the corresponding `Tenant` via
+`UpsertTenantFromClaimCommand`, and make the result available to the rest
+of the request through `TenantContextService`.
 
-#### Scenario: Principal carries a tenant claim
+The `X-Tenant-Id` header, when present, MUST be validated against
+`IPrincipal.tenantIds` before being used — it is client-supplied input and
+only ever *selects among* tenants the verified token already proves
+membership in; it MUST NEVER grant access to a tenant absent from
+`tenantIds`.
+
+#### Scenario: Principal carries exactly one tenant claim, no header sent
 
 - **GIVEN** `IdentityGuard` has attached an `IPrincipal` with
-  `tenantId = "tenant-42"` to the request
+  `tenantIds = ["tenant-42"]` to the request
+- **AND** the request carries no `X-Tenant-Id` header
 - **WHEN** `TenantGuard` processes the request
 - **THEN** the request is allowed
 - **AND** `TenantContextService.get()` returns the resolved `Tenant`'s
-  internal id for the remainder of that request
+  internal id (for external id `"tenant-42"`) for the remainder of that
+  request
 
 #### Scenario: Principal carries no tenant claim
 
 - **GIVEN** `IdentityGuard` has attached an `IPrincipal` with
-  `tenantId = null` to the request
+  `tenantIds = []` to the request
 - **WHEN** `TenantGuard` processes the request
 - **THEN** the guard MUST reject the request with `403 Forbidden` rather
   than allowing it through with no tenant scope
@@ -54,6 +63,36 @@ result available to the rest of the request through
   (e.g. `IdentityGuard` was omitted from the guard chain by mistake)
 - **WHEN** `TenantGuard` processes the request
 - **THEN** the guard MUST reject the request with `403 Forbidden`
+
+#### Scenario: X-Tenant-Id header selects among multiple valid tenants
+
+- **GIVEN** `IdentityGuard` has attached an `IPrincipal` with
+  `tenantIds = ["tenant-1", "tenant-2"]` to the request
+- **AND** the request carries an `X-Tenant-Id: tenant-2` header
+- **WHEN** `TenantGuard` processes the request
+- **THEN** the request is allowed
+- **AND** `TenantContextService.get()` returns the internal id resolved for
+  external id `"tenant-2"` specifically, not `"tenant-1"`
+
+#### Scenario: X-Tenant-Id header value not in the principal's tenants
+
+- **GIVEN** `IdentityGuard` has attached an `IPrincipal` with
+  `tenantIds = ["tenant-1", "tenant-2"]` to the request
+- **AND** the request carries an `X-Tenant-Id: tenant-99` header, a tenant
+  the principal is not a member of
+- **WHEN** `TenantGuard` processes the request
+- **THEN** the guard MUST reject the request with `403 Forbidden`
+- **AND** `UpsertTenantFromClaimCommand` MUST NOT be dispatched for
+  `"tenant-99"`
+
+#### Scenario: Multiple tenants, no header (ambiguous)
+
+- **GIVEN** `IdentityGuard` has attached an `IPrincipal` with
+  `tenantIds = ["tenant-1", "tenant-2"]` to the request
+- **AND** the request carries no `X-Tenant-Id` header
+- **WHEN** `TenantGuard` processes the request
+- **THEN** the guard MUST reject the request with `403 Forbidden` rather
+  than guessing which of the principal's tenants the request meant
 
 ### Requirement: Repository-level tenant scoping
 
