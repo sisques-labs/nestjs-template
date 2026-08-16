@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 
+import { IdentityProviderType } from '../../domain/enums/identity-provider-type.enum';
 import { IIdentityProvider } from '../ports/identity-provider.port';
 
 /**
@@ -16,27 +17,27 @@ import { IIdentityProvider } from '../ports/identity-provider.port';
 export async function identityProviderFactory(
   config: ConfigService,
 ): Promise<IIdentityProvider> {
-  const provider = config.get<string>('IDENTITY_PROVIDER');
+  const provider = config.get<IdentityProviderType>('IDENTITY_PROVIDER');
 
   switch (provider) {
-    case 'cognito': {
+    case IdentityProviderType.COGNITO: {
       const { CognitoIdentityProvider } =
         await import('../../infrastructure/providers/cognito/cognito-identity.provider');
       return new CognitoIdentityProvider(config);
     }
-    case 'supabase': {
+    case IdentityProviderType.SUPABASE: {
       const { SupabaseIdentityProvider } =
         await import('../../infrastructure/providers/supabase/supabase-identity.provider');
       return new SupabaseIdentityProvider(config);
     }
-    case 'oidc': {
+    case IdentityProviderType.OIDC: {
       const { OidcIdentityProvider } =
         await import('../../infrastructure/providers/oidc/oidc-identity.provider');
       return new OidcIdentityProvider(config);
     }
     default:
       throw new Error(
-        `Unsupported IDENTITY_PROVIDER "${String(provider)}". Supported values: cognito, supabase, oidc.`,
+        `Unsupported IDENTITY_PROVIDER "${String(provider)}". Supported values: ${Object.values(IdentityProviderType).join(', ')}.`,
       );
   }
 }
