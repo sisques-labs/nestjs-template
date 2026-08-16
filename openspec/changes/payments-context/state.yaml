@@ -1,0 +1,28 @@
+change: payments-context
+status: proposed
+created: 2026-08-16
+artifact_store: hybrid
+context: payments
+phases:
+  explore: skipped
+  proposal: done
+  spec: done
+  design: done
+  tasks: done
+  apply: pending
+  verify: pending
+  archive: pending
+next_recommended:
+  - opsx:apply
+notes: |
+  First bounded context in this template. Hand-authored (the `openspec` CLI
+  binary is not installed in this sandboxed session) following the exact
+  proposal/design/tasks/spec structure already used by gardenia-api's
+  changes (see openspec/changes/inventory-module there as the structural
+  reference). Scope agreed with the user: nestjs-template repo only,
+  one-off payments + subscriptions + webhooks + refunds, Stripe adapter
+  only for now behind a provider-agnostic port (mirrors gardenia-api's
+  `files` context IFileStoragePort/S3-vs-Database pattern), no coupling to
+  any other context, no auth guard (template has none yet — documented as
+  an explicit, undismissed risk). Not yet implemented — run /opsx:apply
+  (or ask to implement) to start Phase 1.
