@@ -66,7 +66,7 @@ describe('IdentityGuard', () => {
       sub: 'user-123',
       email: 'user@example.com',
       roles: [],
-      tenantId: null,
+      tenantIds: [],
     };
     identityProvider.verifyToken.mockResolvedValue(principal);
     const guard = new IdentityGuard(identityProvider);
@@ -109,7 +109,7 @@ describe('IdentityGuard', () => {
       sub: 'user-123',
       email: null,
       roles: [],
-      tenantId: null,
+      tenantIds: [],
     });
     const guard = new IdentityGuard(identityProvider);
 
