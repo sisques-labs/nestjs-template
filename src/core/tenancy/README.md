@@ -10,7 +10,7 @@ imported into `CoreModule` and nothing about the app's behavior changes.
 ## Enabling it
 
 Set `TENANCY_ENABLED=true`. Requires `IDENTITY_PROVIDER` to also be set
-(`TenantGuard` reads `IPrincipal.tenantId`, so there must be a principal to
+(`TenantGuard` reads `IPrincipal.tenantIds`, so there must be a principal to
 read it from) — missing that dependency fails application boot (see
 `src/core/config/env.validation.ts`).
 
@@ -22,8 +22,9 @@ read it from) — missing that dependency fails application boot (see
   `await`s); `get()` reads it back, returning `undefined` outside any
   `run()`. Deliberately a plain singleton, not a request-scoped provider —
   see the doc comment on the class for why.
-- **`TenantGuard`** — runs after `IdentityGuard`, reads `IPrincipal.tenantId`
-  from the already-attached principal, dispatches
+- **`TenantGuard`** — runs after `IdentityGuard`, resolves which of the
+  principal's tenants the request operates against (see "Selecting a
+  tenant: the `X-Tenant-Id` header" below), dispatches
   `UpsertTenantFromClaimCommand` (lazy find-or-create), and attaches the
   resolved internal `Tenant` id to the request.
 - **`TenantContextInterceptor`** — runs after the guards, wraps the rest of
@@ -45,6 +46,29 @@ read it from) — missing that dependency fails application boot (see
   context's TypeORM repository extends instead of extending
   `BaseDatabaseRepository` directly, to get every query automatically
   filtered to the current tenant.
+
+## Selecting a tenant: the `X-Tenant-Id` header
+
+A single principal can legitimately belong to more than one tenant —
+`IPrincipal.tenantIds` (see `src/core/identity/`) is the full list the IdP's
+verified claims proved membership in. Since one request only ever operates
+against one tenant, the caller selects which via an `X-Tenant-Id` request
+header, read by `TenantGuard`:
+
+| Header               | `tenantIds`   | Result                                                             |
+| -------------------- | ------------- | -------------------------------------------------------------------|
+| present, in list     | any           | `200` — that tenant is used                                        |
+| present, NOT in list | any           | `403` — a caller can never use the header to reach a tenant they don't belong to |
+| absent                | exactly one   | `200` — that sole tenant is used (unambiguous default)             |
+| absent                | zero          | `403` — no tenant claim at all                                     |
+| absent                | more than one | `403` — ambiguous; the caller must specify the header              |
+
+**Security property**: the header is client-supplied input and is never
+trusted blindly — it only ever *selects among* tenants `tenantIds` already
+proves membership in (`tenantIds` comes from a cryptographically verified
+token; the header cannot grant access beyond what that token already
+proves). It is required only when a principal has more than one tenant;
+single-tenant principals don't need to send it.
 
 ## `TenantScopedRepository`
 

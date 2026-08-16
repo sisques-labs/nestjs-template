@@ -2,10 +2,12 @@
 
 ## Why
 
-`IPrincipal.tenantId` (introduced by `add-core-identity-module`) already
-carries a tenant identifier when the active provider's claims include one
-(a Cognito custom attribute, Supabase `app_metadata.tenant_id`, or a
-generic OIDC claim) — but nothing in this template does anything with it.
+`IPrincipal.tenantIds` (introduced by `add-core-identity-module`, revised
+from a single `tenantId` to an array — a principal can belong to more than
+one tenant) already carries the tenant identifiers a principal is a
+verified member of when the active provider's claims include them (a
+Cognito custom attribute, Supabase `app_metadata.tenant_ids`, or a generic
+OIDC claim) — but nothing in this template does anything with it.
 There is no `Tenant` record, no enforcement that a request's data actually
 belongs to its own tenant, and no repository-level guarantee against one
 tenant reading or writing another's rows. A service that clones this
@@ -35,11 +37,13 @@ same way identity was: cross-cutting enforcement infrastructure in
   `src/core/identity/`):
   - `TenantContextService` — `AsyncLocalStorage`-backed accessor for "the
     current tenant" during a request, populated by...
-  - `TenantGuard` — runs after `IdentityGuard`, reads `IPrincipal.tenantId`
-    from the already-attached principal, dispatches
-    `upsert-tenant-from-claim` (lazy upsert, no provider webhooks needed:
-    works identically for Cognito, Supabase, and generic OIDC), and seeds
-    `TenantContextService` for the rest of the request.
+  - `TenantGuard` — runs after `IdentityGuard`, resolves which of the
+    already-attached principal's `tenantIds` the request operates against
+    (an `X-Tenant-Id` header selects among them when there's more than one;
+    see `specs/tenancy-enforcement/spec.md` for the full resolution rules),
+    dispatches `upsert-tenant-from-claim` (lazy upsert, no provider
+    webhooks needed: works identically for Cognito, Supabase, and generic
+    OIDC), and seeds `TenantContextService` for the rest of the request.
   - `TenantScopedRepository` — a base class future bounded-context TypeORM
     repositories extend so every query is automatically filtered to
     `tenant_id = :current` (reads `TenantContextService`) without each
@@ -48,7 +52,7 @@ same way identity was: cross-cutting enforcement infrastructure in
   `IDENTITY_PROVIDER`: unset, this module isn't imported into
   `CORE_MODULES` and nothing about existing behavior changes. Depends on
   `IDENTITY_PROVIDER` also being set (tenancy needs a principal to read
-  `tenantId` from) — validated at boot.
+  `tenantIds` from) — validated at boot.
 - Adds a `tenant_id` column convention: any future bounded context that
   needs tenant isolation adds a `tenantId` column to its entities and
   extends `TenantScopedRepository` instead of the base repository classes.
@@ -65,7 +69,7 @@ same way identity was: cross-cutting enforcement infrastructure in
   (`TENANCY_ENABLED`), `src/database/migrations/` (new `tenants` table
   migration), `.env.example`.
 - **Depends on**: `add-core-identity-module`
-  (`IPrincipal.tenantId`, `IdentityGuard`) — this change cannot land before
+  (`IPrincipal.tenantIds`, `IdentityGuard`) — this change cannot land before
   that one; `TenantGuard` is built directly on top of it.
 - **Breaking changes**: none. Inert unless `TENANCY_ENABLED=true`, and
   even then it adds a new table/context rather than touching anything

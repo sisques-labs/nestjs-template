@@ -17,12 +17,12 @@ import type { E2EContext } from './helpers/app-bootstrap';
 
 const VALID_TOKEN = 'valid-token';
 
-function principalWithTenant(tenantId: string | null): IPrincipal {
+function principalWithTenants(tenantIds: string[]): IPrincipal {
   return {
     sub: 'user-1',
     email: 'user@example.com',
     roles: [Role.USER],
-    tenantId,
+    tenantIds,
   };
 }
 
@@ -132,7 +132,7 @@ describe('Tenancy (e2e)', () => {
     });
 
     it('rejects a principal with no tenant claim with 403', async () => {
-      identityProvider.verifyToken.mockResolvedValue(principalWithTenant(null));
+      identityProvider.verifyToken.mockResolvedValue(principalWithTenants([]));
 
       const res = await ctx
         .http()
@@ -144,7 +144,7 @@ describe('Tenancy (e2e)', () => {
 
     it('resolves the internal tenant id for a valid tenant claim, surviving an async hop, and persists a real tenants row', async () => {
       identityProvider.verifyToken.mockResolvedValue(
-        principalWithTenant('ext-tenant-1'),
+        principalWithTenants(['ext-tenant-1']),
       );
 
       const res = await ctx
@@ -170,7 +170,7 @@ describe('Tenancy (e2e)', () => {
 
     it('does not create a duplicate tenants row for a second request bearing the same external tenant id', async () => {
       identityProvider.verifyToken.mockResolvedValue(
-        principalWithTenant('ext-tenant-1'),
+        principalWithTenants(['ext-tenant-1']),
       );
 
       const first = await ctx
@@ -192,6 +192,95 @@ describe('Tenancy (e2e)', () => {
       );
 
       expect(rows[0].count).toBe('1');
+    });
+  });
+
+  describe('X-Tenant-Id header selection for a multi-tenant principal', () => {
+    it('rejects a principal with multiple tenants and no header with 403 (ambiguous)', async () => {
+      identityProvider.verifyToken.mockResolvedValue(
+        principalWithTenants(['ext-tenant-1', 'ext-tenant-2']),
+      );
+
+      const res = await ctx
+        .http()
+        .get('/api/test-tenant/whoami')
+        .set('Authorization', `Bearer ${VALID_TOKEN}`);
+
+      expect(res.status).toBe(403);
+    });
+
+    it('resolves to the tenant named by the header when it is one of the tenants the principal belongs to', async () => {
+      identityProvider.verifyToken.mockResolvedValue(
+        principalWithTenants(['ext-tenant-1', 'ext-tenant-2']),
+      );
+
+      const res = await ctx
+        .http()
+        .get('/api/test-tenant/whoami')
+        .set('Authorization', `Bearer ${VALID_TOKEN}`)
+        .set('X-Tenant-Id', 'ext-tenant-2');
+
+      expect(res.status).toBe(200);
+      expect(typeof res.body.tenantId).toBe('string');
+
+      const rows = await dataSource.query<
+        { id: string; external_id: string }[]
+      >('SELECT id, external_id FROM tenants WHERE external_id = $1', [
+        'ext-tenant-2',
+      ]);
+
+      expect(rows).toHaveLength(1);
+      expect(rows[0].id).toBe(res.body.tenantId);
+
+      // The other tenant the principal belongs to must NOT have been
+      // upserted just because it appears in `tenantIds` — only the
+      // header-selected tenant is touched.
+      const otherRows = await dataSource.query<{ count: string }[]>(
+        'SELECT COUNT(*) AS count FROM tenants WHERE external_id = $1',
+        ['ext-tenant-1'],
+      );
+      expect(otherRows[0].count).toBe('0');
+    });
+
+    it('rejects a header naming a tenant the principal does NOT belong to with 403', async () => {
+      identityProvider.verifyToken.mockResolvedValue(
+        principalWithTenants(['ext-tenant-1', 'ext-tenant-2']),
+      );
+
+      const res = await ctx
+        .http()
+        .get('/api/test-tenant/whoami')
+        .set('Authorization', `Bearer ${VALID_TOKEN}`)
+        .set('X-Tenant-Id', 'ext-tenant-not-mine');
+
+      expect(res.status).toBe(403);
+
+      const rows = await dataSource.query<{ count: string }[]>(
+        'SELECT COUNT(*) AS count FROM tenants WHERE external_id = $1',
+        ['ext-tenant-not-mine'],
+      );
+      expect(rows[0].count).toBe('0');
+    });
+
+    it('still resolves the sole tenant when a single-tenant principal sends no header', async () => {
+      identityProvider.verifyToken.mockResolvedValue(
+        principalWithTenants(['ext-tenant-solo']),
+      );
+
+      const res = await ctx
+        .http()
+        .get('/api/test-tenant/whoami')
+        .set('Authorization', `Bearer ${VALID_TOKEN}`);
+
+      expect(res.status).toBe(200);
+
+      const rows = await dataSource.query<
+        { id: string; external_id: string }[]
+      >('SELECT id, external_id FROM tenants WHERE external_id = $1', [
+        'ext-tenant-solo',
+      ]);
+      expect(rows).toHaveLength(1);
+      expect(rows[0].id).toBe(res.body.tenantId);
     });
   });
 

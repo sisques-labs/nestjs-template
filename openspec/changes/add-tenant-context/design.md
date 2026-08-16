@@ -90,7 +90,7 @@ src/core/tenancy/
 │       └── tenant-context.service.ts    — AsyncLocalStorage<{ tenantId: string }>; get()/run()
 ├── infrastructure/
 │   ├── guards/
-│   │   └── tenant.guard.ts              — reads IPrincipal.tenantId, dispatches UpsertTenantFromClaimCommand, seeds TenantContextService
+│   │   └── tenant.guard.ts              — resolves a tenant from IPrincipal.tenantIds (+ optional X-Tenant-Id header), dispatches UpsertTenantFromClaimCommand, seeds TenantContextService
 │   └── persistence/typeorm/
 │       └── tenant-scoped.repository.ts  — base class: wraps a QueryBuilder, adds `.andWhere('tenant_id = :tenantId', { tenantId: TenantContextService.get() })`
 └── tenancy.module.ts
@@ -142,8 +142,21 @@ starts with.
 
 5. **Opt-in, and dependent on `IDENTITY_PROVIDER`.** `TENANCY_ENABLED=true`
    without `IDENTITY_PROVIDER` set fails fast at boot (there is no
-   `IPrincipal` to read `tenantId` from) — validated in
+   `IPrincipal` to read `tenantIds` from) — validated in
    `env.validation.ts` alongside the existing per-provider checks.
+
+6. **`X-Tenant-Id` header selects among, never grants beyond, `tenantIds`.**
+   `IPrincipal.tenantIds` (see `add-core-identity-module`'s revision) can
+   hold more than one tenant. Since one request only ever targets one
+   tenant, the caller names which via an `X-Tenant-Id` header —
+   `TenantGuard` requires that value to already be a member of
+   `tenantIds` (`403` otherwise), falls back to the sole entry when the
+   header is absent and there's exactly one, and rejects with `403` when
+   the header is absent and `tenantIds` has zero or multiple entries. The
+   header is untrusted client input; `tenantIds` is derived from the
+   verified token and is the only source of truth for which tenants a
+   request may legally resolve to. See `tenant.guard.ts`'s doc comment and
+   `specs/tenancy-enforcement/spec.md` for the exact branch table.
 
 ## Sequence: first request from a new tenant
 
@@ -157,9 +170,10 @@ sequenceDiagram
     participant DB as Postgres (tenants table)
     participant TenantContext as TenantContextService
 
-    Client->>IdentityGuard: Request + Bearer token (claims include tenant_id)
-    IdentityGuard->>IdentityGuard: verifyToken() -> IPrincipal { tenantId, ... }
+    Client->>IdentityGuard: Request + Bearer token (claims include tenant_id(s))
+    IdentityGuard->>IdentityGuard: verifyToken() -> IPrincipal { tenantIds, ... }
     IdentityGuard->>TenantGuard: allow, principal attached to request
+    TenantGuard->>TenantGuard: resolve externalId from tenantIds (+ X-Tenant-Id header, if present)
     TenantGuard->>CommandBus: execute(UpsertTenantFromClaimCommand(externalId))
     CommandBus->>Handler: handle()
     Handler->>DB: SELECT ... WHERE external_id = :externalId
@@ -203,6 +217,16 @@ sequenceDiagram
   `TenantScopedRepository` abstraction is designed so a service that
   outgrows shared-row isolation can swap the base class's query-building
   strategy later without changing every context's repositories again.
+- **Guessing a tenant when `tenantIds` has multiple entries and no header
+  is sent** (e.g. "use the first one") — rejected: silently picking a
+  tenant on the caller's behalf is exactly the kind of ambiguity a
+  multi-tenant principal must not hit implicitly; `403` with a message
+  telling the caller to send `X-Tenant-Id` is safer and unsurprising.
+- **Trusting `X-Tenant-Id` outright, with no cross-check against
+  `tenantIds`** — rejected outright: a header is ordinary client input, not
+  attested by anything. Never validating it against the verified token's
+  `tenantIds` would let any caller request data for a tenant they have no
+  proven membership in, by just setting a header.
 
 ## Follow-ups (explicitly out of scope here)
 

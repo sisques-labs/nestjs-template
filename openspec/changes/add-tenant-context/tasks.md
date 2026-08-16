@@ -1,7 +1,14 @@
 # Tasks: add-tenant-context
 
-Depends on `add-core-identity-module` landing first (`IPrincipal.tenantId`,
+Depends on `add-core-identity-module` landing first (`IPrincipal.tenantIds`,
 `IdentityGuard`, `getPrincipal()`/`getRequest()` helpers).
+
+**Revision**: `TenantGuard` originally read a single `IPrincipal.tenantId`.
+Post-review it was revised to resolve a tenant from `IPrincipal.tenantIds`
+(a principal can belong to more than one tenant), narrowed by an optional
+`X-Tenant-Id` request header — see `design.md`'s "Decisions" §6 and
+`specs/tenancy-enforcement/spec.md` for the full behavior. Task 3.2 below
+reflects the revised behavior.
 
 ## 1. `tenant` bounded context — domain
 
@@ -45,10 +52,14 @@ Depends on `add-core-identity-module` landing first (`IPrincipal.tenantId`,
       Unit tests: value present inside `run()`, `undefined` outside it,
       correctly isolated across concurrent `run()` calls.
 - [ ] 3.2 `TenantGuard`: reads the principal via `IdentityGuard`'s exported
-      `getPrincipal()`/`getRequest()`, 403s on a missing principal or a
-      null `tenantId`, dispatches `UpsertTenantFromClaimCommand` via
-      `CommandBus`, seeds `TenantContextService` for the rest of the
-      request. Unit tests for all four spec scenarios.
+      `getPrincipal()`/`getRequest()`; 403s on a missing principal, an
+      `X-Tenant-Id` header naming a tenant absent from `tenantIds`, an
+      empty `tenantIds`, or (header absent) more than one entry in
+      `tenantIds`; resolves the header value or the sole `tenantIds` entry
+      otherwise; dispatches `UpsertTenantFromClaimCommand` via
+      `CommandBus`; seeds `TenantContextService` for the rest of the
+      request. Unit tests for all spec scenarios (header valid/invalid,
+      zero/one/many `tenantIds` with no header).
 - [ ] 3.3 `TENANCY_ENABLED` env var + `superRefine` check (requires
       `IDENTITY_PROVIDER` also set) in `src/core/config/env.validation.ts`,
       with tests extending `env.validation.spec.ts`. Add to `.env.example`.
@@ -78,9 +89,12 @@ Depends on `add-core-identity-module` landing first (`IPrincipal.tenantId`,
       before `AppModule` loads, `IIdentityProvider` mocked. Covers: first
       request from a new tenant creates a `Tenant` row; second request
       from the same tenant does not create a duplicate; a principal with
-      no `tenantId` gets 403; an ad-hoc route using
-      `TenantScopedRepository` only returns rows for the current tenant
-      (seed two tenants' worth of rows, assert isolation).
+      empty `tenantIds` gets 403; a principal with multiple `tenantIds`
+      and no `X-Tenant-Id` header gets 403; the header selecting one of
+      several valid tenants resolves to that tenant specifically; the
+      header naming a tenant outside `tenantIds` gets 403; an ad-hoc route
+      using `TenantScopedRepository` only returns rows for the current
+      tenant (seed two tenants' worth of rows, assert isolation).
 - [ ] 5.2 Update root `README.md`: add a `Tenancy` row to the features
       table; note the `users` bounded context (if/when proposed) will
       reference `Tenant.id`.

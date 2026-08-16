@@ -8,13 +8,18 @@ import { mapRoleNames } from '../shared/map-role-names';
  * `IPrincipal` shape. Unlike Cognito/Supabase, the role claim name isn't
  * standardized across OIDC providers, so it's configurable via
  * `OIDC_ROLE_CLAIM` (default `"roles"`).
+ *
+ * `tenant_ids` is accepted as either a native JSON array (most OIDC
+ * providers support arbitrary JSON in custom claims) or a comma-separated
+ * string (defensive fallback, since not every provider's custom-claim
+ * tooling supports arrays cleanly) — both are normalized to `string[]`.
  */
 export function mapOidcClaimsToPrincipal(
   payload: JWTPayload,
   roleClaim: string,
 ): IPrincipal {
   const rawRoles = payload[roleClaim];
-  const tenantId = payload.tenant_id;
+  const tenantIdsClaim = payload.tenant_ids;
 
   return {
     sub: String(payload.sub),
@@ -22,6 +27,23 @@ export function mapOidcClaimsToPrincipal(
     roles: mapRoleNames(
       Array.isArray(rawRoles) ? (rawRoles as string[]) : undefined,
     ),
-    tenantId: typeof tenantId === 'string' ? tenantId : null,
+    tenantIds: normalizeTenantIds(tenantIdsClaim),
   };
+}
+
+function normalizeTenantIds(tenantIdsClaim: unknown): string[] {
+  if (Array.isArray(tenantIdsClaim)) {
+    return tenantIdsClaim.filter(
+      (value): value is string => typeof value === 'string',
+    );
+  }
+
+  if (typeof tenantIdsClaim === 'string') {
+    return tenantIdsClaim
+      .split(',')
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+  }
+
+  return [];
 }

@@ -29,7 +29,10 @@ listening. Only one provider is active per deployment.
   submitted email is logged on entry.
 - **`IdentityGuard`** — verifies the `Authorization: Bearer <token>` header
   against the active provider and attaches a normalized `IPrincipal`
-  (`sub`, `email`, `roles`, `tenantId`) to the request. Works for REST and
+  (`sub`, `email`, `roles`, `tenantIds`) to the request. `tenantIds` is every
+  tenant the principal is a verified member of (an empty array means no
+  tenant membership) — see `src/core/tenancy/README.md` for how a request
+  picks one of them via the `X-Tenant-Id` header. Works for REST and
   GraphQL.
 - **`RolesGuard` + `@Roles(...)`** — enforces role metadata against the
   attached principal. Run after `IdentityGuard`:
