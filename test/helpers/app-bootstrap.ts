@@ -1,6 +1,7 @@
 import { INestApplication, Type, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
+import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
@@ -40,6 +41,11 @@ export async function createE2EApp(
   const app = moduleFixture.createNestApplication();
 
   app.setGlobalPrefix('api');
+
+  // Mirrors src/main.ts: createNestApplication() doesn't run the real
+  // bootstrap() function, so cookie-parser has to be wired here too or
+  // req.cookies is undefined for every e2e spec that needs cookies.
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
