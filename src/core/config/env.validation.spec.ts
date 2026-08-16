@@ -125,6 +125,7 @@ describe('validateEnv', () => {
       COGNITO_USER_POOL_ID: 'us-east-1_abc123',
       COGNITO_CLIENT_ID: 'client-id',
       COGNITO_REGION: 'us-east-1',
+      COGNITO_HOSTED_UI_DOMAIN: 'my-app.auth.us-east-1.amazoncognito.com',
     });
 
     expect(() => validateEnv(env)).not.toThrow();
@@ -166,5 +167,107 @@ describe('validateEnv', () => {
     });
 
     expect(() => validateEnv(env)).not.toThrow();
+  });
+
+  it('rejects IDENTITY_PROVIDER=cognito without COGNITO_HOSTED_UI_DOMAIN', () => {
+    const env = validEnv({
+      IDENTITY_PROVIDER: 'cognito',
+      COGNITO_USER_POOL_ID: 'us-east-1_abc123',
+      COGNITO_CLIENT_ID: 'client-id',
+      COGNITO_REGION: 'us-east-1',
+    });
+
+    expect(() => validateEnv(env)).toThrow(
+      /COGNITO_HOSTED_UI_DOMAIN is required when IDENTITY_PROVIDER is "cognito"/,
+    );
+  });
+
+  it('accepts IDENTITY_PROVIDER=cognito with COGNITO_HOSTED_UI_DOMAIN set', () => {
+    const env = validEnv({
+      IDENTITY_PROVIDER: 'cognito',
+      COGNITO_USER_POOL_ID: 'us-east-1_abc123',
+      COGNITO_CLIENT_ID: 'client-id',
+      COGNITO_REGION: 'us-east-1',
+      COGNITO_HOSTED_UI_DOMAIN: 'my-app.auth.us-east-1.amazoncognito.com',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
+
+  it('accepts OAUTH_SESSION_ENABLED unset', () => {
+    expect(() => validateEnv(validEnv())).not.toThrow();
+  });
+
+  it('rejects OAUTH_SESSION_ENABLED=true without SESSION_REDIS_URL, OAUTH_REDIRECT_URI, OAUTH_SUCCESS_REDIRECT_URL', () => {
+    const env = validEnv({
+      OAUTH_SESSION_ENABLED: 'true',
+      IDENTITY_PROVIDER: 'supabase',
+      SUPABASE_URL: 'https://project.supabase.co',
+      SUPABASE_JWT_SECRET: 'secret',
+      SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+    });
+
+    expect(() => validateEnv(env)).toThrow(
+      /SESSION_REDIS_URL is required when OAUTH_SESSION_ENABLED is "true"/,
+    );
+    expect(() => validateEnv(env)).toThrow(
+      /OAUTH_REDIRECT_URI is required when OAUTH_SESSION_ENABLED is "true"/,
+    );
+    expect(() => validateEnv(env)).toThrow(
+      /OAUTH_SUCCESS_REDIRECT_URL is required when OAUTH_SESSION_ENABLED is "true"/,
+    );
+  });
+
+  it('rejects OAUTH_SESSION_ENABLED=true without IDENTITY_PROVIDER', () => {
+    const env = validEnv({
+      OAUTH_SESSION_ENABLED: 'true',
+      SESSION_REDIS_URL: 'redis://localhost:6379',
+      OAUTH_REDIRECT_URI: 'http://localhost:3000/api/auth/oauth/callback',
+      OAUTH_SUCCESS_REDIRECT_URL: 'http://localhost:3001/dashboard',
+    });
+
+    expect(() => validateEnv(env)).toThrow(
+      /IDENTITY_PROVIDER is required when OAUTH_SESSION_ENABLED is "true"/,
+    );
+  });
+
+  it('accepts OAUTH_SESSION_ENABLED=true with all required vars set', () => {
+    const env = validEnv({
+      OAUTH_SESSION_ENABLED: 'true',
+      IDENTITY_PROVIDER: 'supabase',
+      SUPABASE_URL: 'https://project.supabase.co',
+      SUPABASE_JWT_SECRET: 'secret',
+      SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      SESSION_REDIS_URL: 'redis://localhost:6379',
+      OAUTH_REDIRECT_URI: 'http://localhost:3000/api/auth/oauth/callback',
+      OAUTH_SUCCESS_REDIRECT_URL: 'http://localhost:3001/dashboard',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
+
+  it('accepts OAUTH_SESSION_ENABLED=true with optional SESSION_COOKIE_NAME/SESSION_TTL_SECONDS overridden', () => {
+    const env = validEnv({
+      OAUTH_SESSION_ENABLED: 'true',
+      IDENTITY_PROVIDER: 'supabase',
+      SUPABASE_URL: 'https://project.supabase.co',
+      SUPABASE_JWT_SECRET: 'secret',
+      SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+      SESSION_REDIS_URL: 'redis://localhost:6379',
+      OAUTH_REDIRECT_URI: 'http://localhost:3000/api/auth/oauth/callback',
+      OAUTH_SUCCESS_REDIRECT_URL: 'http://localhost:3001/dashboard',
+      SESSION_COOKIE_NAME: 'my_session',
+      SESSION_TTL_SECONDS: '3600',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
+
+  it('rejects a non-numeric SESSION_TTL_SECONDS', () => {
+    const env = validEnv({ SESSION_TTL_SECONDS: 'not-a-number' });
+
+    expect(() => validateEnv(env)).toThrow(
+      /Environment validation failed:[\s\S]*SESSION_TTL_SECONDS/,
+    );
   });
 });
