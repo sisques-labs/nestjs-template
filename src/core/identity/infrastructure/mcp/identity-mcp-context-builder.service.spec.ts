@@ -36,7 +36,7 @@ describe('IdentityMcpContextBuilder', () => {
       sub: 'user-123',
       email: 'user@example.com',
       roles: [],
-      tenantId: null,
+      tenantIds: [],
     };
     identityProvider.verifyToken.mockResolvedValue(principal);
     const builder = new IdentityMcpContextBuilder(identityProvider);
