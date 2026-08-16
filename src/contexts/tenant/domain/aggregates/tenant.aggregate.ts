@@ -41,7 +41,18 @@ export class TenantAggregate extends BaseAggregate {
    * the constructor.
    */
   create(): void {
-    this.apply(new TenantCreatedEvent(this.toPrimitives()));
+    this.apply(
+      new TenantCreatedEvent(
+        {
+          aggregateRootId: this._id.value,
+          aggregateRootType: TenantAggregate.name,
+          entityId: this._id.value,
+          entityType: TenantAggregate.name,
+          eventType: TenantCreatedEvent.name,
+        },
+        this.toPrimitives(),
+      ),
+    );
   }
 
   toPrimitives(): TenantPrimitives {
