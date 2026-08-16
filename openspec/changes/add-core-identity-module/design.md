@@ -1,5 +1,19 @@
 # Design: core identity module
 
+## Revision: `tenantId` → `tenantIds`
+
+Post-review, `IPrincipal.tenantId: string | null` was revised to
+`IPrincipal.tenantIds: string[]`. A single user/principal can legitimately
+belong to more than one tenant, and the original single-value shape had no
+way to represent that — a principal in two tenants would have needed two
+separate tokens/principals, or an arbitrary "pick one" rule baked into each
+provider's claims mapper. `tenantIds` carries every tenant the verified
+token proves membership in (empty array = no tenant membership); which one
+of several a given *request* operates against is now a `TenantGuard`
+concern (an `X-Tenant-Id` header, added in `add-tenant-context`), not
+something this module decides. See that change's design doc for the full
+selection logic.
+
 ## Layout
 
 `src/core/identity/` follows the same domain/application/infrastructure/
@@ -150,7 +164,7 @@ sequenceDiagram
     Guard->>Provider: verifyToken(token)
     Provider->>JWKS: fetch signing key (cache miss only)
     JWKS-->>Provider: public key
-    Provider-->>Guard: IPrincipal {sub, email, roles, tenantId}
+    Provider-->>Guard: IPrincipal {sub, email, roles, tenantIds}
     Guard->>Guard: attach IPrincipal to request
     Guard->>Handler: allow
     Handler->>Handler: @CurrentUser() reads IPrincipal
