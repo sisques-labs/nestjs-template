@@ -12,4 +12,8 @@ export interface ISubscriptionWriteRepository extends IBaseWriteRepository<Subsc
     provider: string,
     idempotencyKey: string,
   ): Promise<SubscriptionAggregate | null>;
+  /** Backs webhook ingestion — events carry only the provider's own subscription id. */
+  findByProviderSubscriptionId(
+    providerSubscriptionId: string,
+  ): Promise<SubscriptionAggregate | null>;
 }

@@ -10,4 +10,8 @@ export interface IPaymentWriteRepository extends IBaseWriteRepository<PaymentAgg
     provider: string,
     idempotencyKey: string,
   ): Promise<PaymentAggregate | null>;
+  /** Backs webhook ingestion — events carry only the provider's own payment id. */
+  findByProviderPaymentId(
+    providerPaymentId: string,
+  ): Promise<PaymentAggregate | null>;
 }
