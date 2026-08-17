@@ -12,7 +12,7 @@ importers:
         specifier: ^4.13.0
         version: 4.13.0(graphql@17.0.2)(supports-color@8.1.1)
       '@modelcontextprotocol/sdk':
-        specifier: ^1.29.0
+        specifier: 1.30.0
         version: 1.30.0(supports-color@8.1.1)(zod@4.4.3)
       '@nestjs/apollo':
         specifier: 12.2.2
