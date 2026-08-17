@@ -46,6 +46,8 @@ jobs:
       DATABASE_PASSWORD: postgres
       FRONTEND_URL: http://localhost:3001
       NODE_ENV: test
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
 
     steps:
       - name: Setup
@@ -93,6 +95,8 @@ jobs:
       DATABASE_PASSWORD: postgres
       FRONTEND_URL: http://localhost:3001
       NODE_ENV: test
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
 
     steps:
       - name: Setup
