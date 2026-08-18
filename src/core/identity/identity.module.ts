@@ -68,6 +68,11 @@ const TRANSPORT_CONTROLLERS = [
     ...SESSION_PROVIDERS,
     ...INFRASTRUCTURE_GUARDS,
   ],
-  exports: [IDENTITY_PROVIDER, SESSION_STORE, IdentityGuard, RolesGuard],
+  exports: [
+    IDENTITY_PROVIDER,
+    ...(OAUTH_SESSION_ENABLED ? [SESSION_STORE] : []),
+    IdentityGuard,
+    RolesGuard,
+  ],
 })
 export class IdentityModule {}
