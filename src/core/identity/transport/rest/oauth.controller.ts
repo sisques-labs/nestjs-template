@@ -77,6 +77,12 @@ export class OAuthController {
       OAUTH_NONCE_COOKIE_NAME,
       OAUTH_NONCE_TTL_SECONDS,
     );
+    // codeql[js/clear-text-storage-of-sensitive-data]: `nonce` is a
+    // randomUUID() correlation id, not a secret — it's only used to look up
+    // the real `state`/`codeVerifier` pair server-side in `sessionStore`
+    // (see OAuthStateService.start()), which are never sent to the client.
+    // CodeQL over-taints it from being destructured alongside `state`/
+    // `codeVerifier` in the same return value.
     res.cookie(nonceCookie.name, nonceCookie.value, nonceCookie.options);
 
     const url = await this.identityProvider.getAuthorizationUrl({
