@@ -3,6 +3,7 @@ import './telemetry';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -15,6 +16,13 @@ async function bootstrap() {
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   app.setGlobalPrefix('api');
+
+  // Parses the `Cookie` header into `req.cookies` — inert for any request
+  // that doesn't send one, so this is unconditional (unlike the OAuth
+  // session guard/controller, which stay gated behind
+  // OAUTH_SESSION_ENABLED). Needed by the session cookie the OAuth/BFF login
+  // flow sets (src/core/identity/) once OAUTH_SESSION_ENABLED is enabled.
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
