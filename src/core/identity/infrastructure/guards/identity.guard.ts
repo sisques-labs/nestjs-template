@@ -20,6 +20,7 @@ import {
   ISessionStore,
   SESSION_STORE,
 } from '../../application/ports/session-store.port';
+import { extractBearerToken } from '../extract-bearer-token';
 import { REQUEST_PRINCIPAL_KEY } from './request-principal.constant';
 
 const DEFAULT_SESSION_COOKIE_NAME = 'session';
@@ -60,7 +61,7 @@ export class IdentityGuard implements CanActivate {
       }
     }
 
-    const token = extractBearerToken(request);
+    const token = extractBearerToken(request.headers.authorization);
     if (!token) {
       throw new UnauthorizedException('Missing bearer token');
     }
@@ -132,15 +133,6 @@ export function getRequest(context: ExecutionContext): Request {
       .req;
   }
   return context.switchToHttp().getRequest<Request>();
-}
-
-function extractBearerToken(request: Request): string | null {
-  const header = request.headers.authorization;
-  if (!header?.startsWith('Bearer ')) {
-    return null;
-  }
-  const token = header.slice('Bearer '.length).trim();
-  return token.length > 0 ? token : null;
 }
 
 function setPrincipal(request: Request, principal: IPrincipal): void {

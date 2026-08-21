@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 
@@ -53,7 +53,13 @@ const TRANSPORT_CONTROLLERS = [
  * use (`@UseGuards(IdentityGuard, RolesGuard)`) on whichever
  * controllers/resolvers a service adds — they are not applied globally, so
  * importing this module does not require auth on existing routes.
+ *
+ * `@Global()` because `McpModule.forRoot({ contextBuilder })` (nestjs-kit)
+ * registers `IdentityMcpContextBuilder` inside its own dynamic module,
+ * which only imports `DiscoveryModule` — without `@Global()` the
+ * `IIdentityProvider` token this builder depends on wouldn't resolve there.
  */
+@Global()
 @Module({
   imports: [ConfigModule],
   controllers: [...TRANSPORT_CONTROLLERS],
@@ -62,6 +68,11 @@ const TRANSPORT_CONTROLLERS = [
     ...SESSION_PROVIDERS,
     ...INFRASTRUCTURE_GUARDS,
   ],
-  exports: [IDENTITY_PROVIDER, SESSION_STORE, IdentityGuard, RolesGuard],
+  exports: [
+    IDENTITY_PROVIDER,
+    ...(OAUTH_SESSION_ENABLED ? [SESSION_STORE] : []),
+    IdentityGuard,
+    RolesGuard,
+  ],
 })
 export class IdentityModule {}
