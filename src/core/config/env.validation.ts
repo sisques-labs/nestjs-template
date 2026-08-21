@@ -134,6 +134,14 @@ const baseEnvSchema = z
         message: 'IDENTITY_PROVIDER is required when TENANCY_ENABLED is "true"',
       });
     }
+
+    if (env.TENANCY_ENABLED === 'true' && !env.IDENTITY_PROVIDER) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['IDENTITY_PROVIDER'],
+        message: 'IDENTITY_PROVIDER is required when TENANCY_ENABLED is "true"',
+      });
+    }
   });
 
 function requireFields(

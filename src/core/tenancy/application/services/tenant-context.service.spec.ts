@@ -1,3 +1,4 @@
+import { NoTenantContextException } from '@core/tenancy/application/exceptions/no-tenant-context.exception';
 import { TenantContextService } from './tenant-context.service';
 
 describe('TenantContextService', () => {
@@ -37,6 +38,22 @@ describe('TenantContextService', () => {
     });
 
     expect(service.get()).toBeUndefined();
+  });
+
+  describe('require()', () => {
+    it('throws NoTenantContextException before any run() call', () => {
+      const service = new TenantContextService();
+
+      expect(() => service.require()).toThrow(NoTenantContextException);
+    });
+
+    it('returns the tenant id inside run()', () => {
+      const service = new TenantContextService();
+
+      service.run('tenant-1', () => {
+        expect(service.require()).toBe('tenant-1');
+      });
+    });
   });
 
   it('isolates concurrent run() calls from each other', async () => {

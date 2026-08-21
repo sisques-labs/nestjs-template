@@ -80,6 +80,6 @@ rationale (including sequence diagrams). Explicitly out of scope for v1: a
 tenant admin API (rename/suspend/delete/list), any webhook-driven tenant
 sync, and the `users` bounded context (designed to reference `Tenant.id`,
 not built here). Tenant isolation enforcement (`TenantGuard`,
-`TenantContextService`, `TenantScopedRepository`) lives in
+`TenantContextService`, `createTenantScopedRepository()`) lives in
 `src/core/tenancy/`, added in a later change — this context only owns the
 `Tenant` record itself.

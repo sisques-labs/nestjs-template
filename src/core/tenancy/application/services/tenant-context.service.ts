@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { AsyncLocalStorage } from 'node:async_hooks';
 
+import { NoTenantContextException } from '@core/tenancy/application/exceptions/no-tenant-context.exception';
+
 interface TenantContextStore {
   tenantId: string;
 }
@@ -33,5 +35,20 @@ export class TenantContextService {
 
   get(): string | undefined {
     return this.storage.getStore()?.tenantId;
+  }
+
+  /**
+   * Same as `get()`, but throws `NoTenantContextException` instead of
+   * returning `undefined` when no tenant context is present — the
+   * convenience callers that must never proceed without one (e.g.
+   * `createTenantScopedRepository()`) use instead of checking `get()`
+   * themselves.
+   */
+  require(): string {
+    const tenantId = this.get();
+    if (!tenantId) {
+      throw new NoTenantContextException();
+    }
+    return tenantId;
   }
 }
