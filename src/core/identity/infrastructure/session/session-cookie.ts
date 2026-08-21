@@ -14,18 +14,19 @@ const BASE_COOKIE_OPTIONS: CookieOptions = {
 };
 
 /**
- * Builds the `res.cookie(name, value, options)` arguments for the opaque
- * session-id cookie. The cookie only ever carries the session id — never
- * the provider's tokens.
+ * Builds the `res.cookie(name, value, options)` arguments for an opaque
+ * cookie — the session-id cookie and the OAuth `nonce` cookie alike. Both
+ * are correlation ids pointing at server-side state (`ISessionStore`),
+ * never a secret or token itself.
  */
 export function buildSessionCookie(
-  sessionId: string,
+  value: string,
   cookieName: string,
   ttlSeconds: number,
 ): { name: string; value: string; options: CookieOptions } {
   return {
     name: cookieName,
-    value: sessionId,
+    value,
     options: {
       ...BASE_COOKIE_OPTIONS,
       maxAge: ttlSeconds * 1000,
