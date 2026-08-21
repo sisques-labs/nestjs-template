@@ -1,6 +1,7 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { INestApplication, Type, ValidationPipe } from '@nestjs/common';
+import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
+import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
@@ -15,16 +16,36 @@ export interface E2EContext {
   close: () => Promise<void>;
 }
 
-export async function createE2EApp(): Promise<E2EContext> {
+export interface E2EAppOptions {
+  /** Extra controllers to add to the root testing module, alongside AppModule. */
+  controllers?: Type<unknown>[];
+  /** DI tokens to override with a fixed value before compiling the module — e.g. a mocked provider. */
+  overrideProviders?: Array<{ token: unknown; useValue: unknown }>;
+}
+
+export async function createE2EApp(
+  options: E2EAppOptions = {},
+): Promise<E2EContext> {
   await bootstrapTestDataSource();
 
-  const moduleFixture = await Test.createTestingModule({
+  let builder: TestingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+    controllers: options.controllers ?? [],
+  });
+  for (const { token, useValue } of options.overrideProviders ?? []) {
+    builder = builder.overrideProvider(token).useValue(useValue);
+  }
+
+  const moduleFixture = await builder.compile();
 
   const app = moduleFixture.createNestApplication();
 
   app.setGlobalPrefix('api');
+
+  // Mirrors src/main.ts: createNestApplication() doesn't run the real
+  // bootstrap() function, so cookie-parser has to be wired here too or
+  // req.cookies is undefined for every e2e spec that needs cookies.
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
