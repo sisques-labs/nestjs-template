@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID, createHash } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
 
@@ -18,10 +18,11 @@ interface StoredOAuthState {
 
 /**
  * Generates and validates the PKCE + CSRF-state pair for the OAuth
- * redirect flow, backed by `ISessionStore`. Entries are keyed by a random
- * `nonce` (round-tripped to the browser via a short-lived cookie, never
- * the `state`/`codeVerifier` themselves) so the callback can find its
- * matching `start()` call.
+ * redirect flow, backed by `ISessionStore`. Entries are keyed by `nonce` —
+ * a correlation id the *caller* generates and owns (round-tripped to the
+ * browser via a short-lived cookie), kept separate from the `state`/
+ * `codeVerifier` pair this service generates and never returns, so the
+ * callback can find its matching `start()` call.
  */
 @Injectable()
 export class OAuthStateService {
@@ -31,13 +32,10 @@ export class OAuthStateService {
     @Inject(SESSION_STORE) private readonly sessionStore: ISessionStore,
   ) {}
 
-  async start(): Promise<{
-    nonce: string;
+  async start(nonce: string): Promise<{
     state: string;
-    codeVerifier: string;
     codeChallenge: string;
   }> {
-    const nonce = randomUUID();
     const state = randomBytes(32).toString('base64url');
     const codeVerifier = randomBytes(32).toString('base64url');
     const codeChallenge = createHash('sha256')
@@ -51,7 +49,7 @@ export class OAuthStateService {
       OAUTH_STATE_TTL_SECONDS,
     );
 
-    return { nonce, state, codeVerifier, codeChallenge };
+    return { state, codeChallenge };
   }
 
   async consume(

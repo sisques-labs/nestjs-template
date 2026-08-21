@@ -69,20 +69,14 @@ export class OAuthController {
 
     const redirectUri =
       this.configService.getOrThrow<string>('OAUTH_REDIRECT_URI');
-    const { nonce, state, codeChallenge } =
-      await this.oauthStateService.start();
+    const nonce = randomUUID();
+    const { state, codeChallenge } = await this.oauthStateService.start(nonce);
 
     const nonceCookie = buildSessionCookie(
       nonce,
       OAUTH_NONCE_COOKIE_NAME,
       OAUTH_NONCE_TTL_SECONDS,
     );
-    // `nonce` is a randomUUID() correlation id, not a secret — it's only
-    // used to look up the real `state`/`codeVerifier` pair server-side in
-    // `sessionStore` (see OAuthStateService.start()), which are never sent
-    // to the client. CodeQL over-taints it from being destructured
-    // alongside `state`/`codeVerifier` in the same return value.
-    // codeql[js/clear-text-storage-of-sensitive-data]: see comment above
     res.cookie(nonceCookie.name, nonceCookie.value, nonceCookie.options);
 
     const url = await this.identityProvider.getAuthorizationUrl({

@@ -75,9 +75,7 @@ describe('OAuthController', () => {
     const sessionStore = buildSessionStore();
     const oauthStateService = buildOAuthStateService();
     oauthStateService.start.mockResolvedValue({
-      nonce: 'nonce-1',
       state: 'state-1',
-      codeVerifier: 'verifier-1',
       codeChallenge: 'challenge-1',
     });
     identityProvider.getAuthorizationUrl.mockResolvedValue(
@@ -93,9 +91,11 @@ describe('OAuthController', () => {
 
     await controller.start(res);
 
+    const nonceUsed = oauthStateService.start.mock.calls[0][0];
+    expect(nonceUsed).toEqual(expect.any(String));
     expect(res.cookie).toHaveBeenCalledWith(
       'oauth_nonce',
-      'nonce-1',
+      nonceUsed,
       expect.objectContaining({ httpOnly: true, sameSite: 'lax' }),
     );
     expect(identityProvider.getAuthorizationUrl).toHaveBeenCalledWith({

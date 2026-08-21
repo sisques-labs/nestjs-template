@@ -11,32 +11,35 @@ function buildSessionStore(): jest.Mocked<ISessionStore> {
 
 describe('OAuthStateService', () => {
   describe('start()', () => {
-    it('writes a state/codeVerifier pair keyed by nonce with a 5-minute TTL', async () => {
+    it('writes a state/codeVerifier pair keyed by the given nonce with a 5-minute TTL', async () => {
       const sessionStore = buildSessionStore();
       const service = new OAuthStateService(sessionStore);
 
-      const result = await service.start();
+      const result = await service.start('nonce-1');
 
-      expect(result.nonce).toEqual(expect.any(String));
       expect(result.state).toEqual(expect.any(String));
-      expect(result.codeVerifier).toEqual(expect.any(String));
       expect(result.codeChallenge).toEqual(expect.any(String));
       expect(sessionStore.set).toHaveBeenCalledWith(
-        `oauth:${result.nonce}`,
-        { state: result.state, codeVerifier: result.codeVerifier },
+        'oauth:nonce-1',
+        { state: result.state, codeVerifier: expect.any(String) },
         300,
       );
     });
 
-    it('derives codeChallenge as the base64url SHA-256 of codeVerifier', async () => {
+    it('derives codeChallenge as the base64url SHA-256 of the stored codeVerifier', async () => {
       const sessionStore = buildSessionStore();
       const service = new OAuthStateService(sessionStore);
 
-      const result = await service.start();
+      const result = await service.start('nonce-1');
 
+      const [, storedState] = sessionStore.set.mock.calls[0] as [
+        string,
+        { codeVerifier: string },
+        number,
+      ];
       const { createHash } = await import('crypto');
       const expected = createHash('sha256')
-        .update(result.codeVerifier)
+        .update(storedState.codeVerifier)
         .digest('base64url');
       expect(result.codeChallenge).toBe(expected);
     });
