@@ -1,11 +1,13 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 import { CreateTenants1786818350610 } from '../../src/database/migrations/1786818350610-CreateTenants';
+import { CreateUsers1787480945650 } from '../../src/database/migrations/1787480945650-CreateUsers';
 
 // Add migration imports here as new bounded contexts introduce them, e.g.
 // `import { CreateOrders1780000000000 } from '../../src/database/migrations/1780000000000-CreateOrders';`
 const TEST_MIGRATIONS: DataSourceOptions['migrations'] = [
   CreateTenants1786818350610,
+  CreateUsers1787480945650,
 ];
 
 export function getTestDataSourceOptions(): DataSourceOptions {
