@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsLocale,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsTimeZone,
   IsUrl,
   MaxLength,
 } from 'class-validator';
@@ -11,13 +13,13 @@ import { USER_DISPLAY_NAME_MAX_LENGTH } from '@contexts/users/domain/value-objec
 
 /**
  * `PATCH /users/me` request body. `displayName` is required and always
- * applied. `avatarUrl` is genuinely optional — a three-state field: the
- * key entirely absent leaves the stored value untouched, `null` clears
- * it, a URL string sets it (see `UpdateUserProfileCommand`'s doc comment
- * for the same contract on the application side). `@IsOptional()` in
- * class-validator skips the `@IsUrl()` check for both `undefined` and
- * `null`, which is exactly the "don't validate format when there's
- * nothing to validate" behavior this needs.
+ * applied. `avatarUrl`/`locale`/`timezone` are each genuinely optional — a
+ * three-state field: the key entirely absent leaves the stored value
+ * untouched, `null` clears it, a value sets it (see
+ * `UpdateUserProfileCommand`'s doc comment for the same contract on the
+ * application side). `@IsOptional()` in class-validator skips the format
+ * check for both `undefined` and `null`, which is exactly the "don't
+ * validate format when there's nothing to validate" behavior this needs.
  *
  * `email`, `externalId`, and `tenantId` are derived exclusively from the
  * verified token/resolved tenant and are never client-writable through
@@ -36,4 +38,14 @@ export class UpdateUserProfileDto {
   @IsOptional()
   @IsUrl()
   avatarUrl?: string | null;
+
+  @ApiProperty({ nullable: true, required: false, example: 'en-US' })
+  @IsOptional()
+  @IsLocale()
+  locale?: string | null;
+
+  @ApiProperty({ nullable: true, required: false, example: 'Europe/Madrid' })
+  @IsOptional()
+  @IsTimeZone()
+  timezone?: string | null;
 }

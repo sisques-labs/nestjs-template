@@ -80,7 +80,8 @@ export class UsersController {
 
   @Patch('me')
   @ApiOperation({
-    summary: "Update the caller's own displayName and/or avatarUrl",
+    summary:
+      "Update the caller's own displayName and/or avatarUrl/locale/timezone",
   })
   @ApiResponse({ status: 200, type: UserProfileResponseDto })
   async updateMe(
@@ -101,11 +102,13 @@ export class UsersController {
         externalId: currentPrincipal.sub,
         email: currentPrincipal.email,
         displayName: dto.displayName,
-        // `dto.avatarUrl` is `undefined` when the request body omits the
-        // key entirely (class-transformer never sets it on the instance) —
-        // passed through as-is so the command's three-state contract
-        // (omitted/null/set) is preserved end to end.
+        // `dto.avatarUrl`/`dto.locale`/`dto.timezone` are `undefined` when
+        // the request body omits the key entirely (class-transformer never
+        // sets it on the instance) — passed through as-is so the command's
+        // three-state contract (omitted/null/set) is preserved end to end.
         avatarUrl: dto.avatarUrl,
+        locale: dto.locale,
+        timezone: dto.timezone,
       }),
     );
 

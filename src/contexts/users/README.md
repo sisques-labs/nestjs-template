@@ -37,10 +37,10 @@ find-or-create is a write-side concern here, the same reasoning
 - **`GET /users/me`** — resolves-and-returns the caller's own profile,
   upserting it on first request.
 - **`PATCH /users/me`** — updates `displayName` (required, always applied)
-  and/or `avatarUrl` (optional, three-state: omitted = untouched,
-  `null` = cleared, a URL = set); `email`/`externalId`/`tenantId` are
-  derived exclusively from the verified token and resolved tenant, never
-  client-writable.
+  and/or `avatarUrl`/`locale`/`timezone` (each optional, three-state:
+  omitted = untouched, `null` = cleared, a value = set); `email`/
+  `externalId`/`tenantId` are derived exclusively from the verified token
+  and resolved tenant, never client-writable.
 
 Both behind `IdentityGuard` + `TenantGuard` + `TenantContextInterceptor`.
 `UsersController` is registered only when both `IDENTITY_PROVIDER` and

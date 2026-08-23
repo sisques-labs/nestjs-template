@@ -31,7 +31,12 @@ function buildTenantContextServiceMock(): jest.Mocked<TenantContextService> {
 }
 
 function buildViewModel(
-  overrides: Partial<{ displayName: string; avatarUrl: string | null }> = {},
+  overrides: Partial<{
+    displayName: string;
+    avatarUrl: string | null;
+    locale: string | null;
+    timezone: string | null;
+  }> = {},
 ): UserViewModel {
   return new UserViewModel({
     id: '5f8d0d55-1c3a-4b7e-9a2f-3b6d1e0c9a11',
@@ -40,6 +45,8 @@ function buildViewModel(
     email: 'alice@example.com',
     displayName: overrides.displayName ?? 'Alice',
     avatarUrl: overrides.avatarUrl ?? null,
+    locale: overrides.locale ?? null,
+    timezone: overrides.timezone ?? null,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),
   });
@@ -76,6 +83,8 @@ describe('UsersController', () => {
         email: 'alice@example.com',
         displayName: 'Alice',
         avatarUrl: null,
+        locale: null,
+        timezone: null,
         tenantId: TENANT_ID,
         createdAt: new Date('2026-01-01T00:00:00.000Z'),
         updatedAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -140,6 +149,42 @@ describe('UsersController', () => {
         avatarUrl: { value: string } | null | undefined;
       };
       expect(command.avatarUrl).toBeNull();
+    });
+
+    it('passes locale and timezone through when the request body includes them', async () => {
+      commandBus.execute.mockResolvedValue(
+        buildViewModel({ locale: 'es-ES', timezone: 'Europe/Madrid' }),
+      );
+
+      await controller.updateMe(PRINCIPAL, {
+        displayName: 'Alicia',
+        locale: 'es-ES',
+        timezone: 'Europe/Madrid',
+      });
+
+      const command = commandBus.execute.mock.calls[0][0] as {
+        locale: { value: string } | null | undefined;
+        timezone: { value: string } | null | undefined;
+      };
+      expect(command.locale?.value).toBe('es-ES');
+      expect(command.timezone?.value).toBe('Europe/Madrid');
+    });
+
+    it('passes null locale and timezone through as clear requests, not "omitted"', async () => {
+      commandBus.execute.mockResolvedValue(buildViewModel());
+
+      await controller.updateMe(PRINCIPAL, {
+        displayName: 'Alicia',
+        locale: null,
+        timezone: null,
+      });
+
+      const command = commandBus.execute.mock.calls[0][0] as {
+        locale: { value: string } | null | undefined;
+        timezone: { value: string } | null | undefined;
+      };
+      expect(command.locale).toBeNull();
+      expect(command.timezone).toBeNull();
     });
 
     it('throws UnauthorizedException when no principal is attached', async () => {
