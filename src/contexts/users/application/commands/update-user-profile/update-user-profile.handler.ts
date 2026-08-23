@@ -14,9 +14,10 @@ import { UserViewModel } from '@contexts/users/domain/view-models/user.view-mode
 /**
  * Finds or creates the `User` (same as `UpsertUserFromClaimHandler`),
  * publishes its creation event if it was newly created, then applies the
- * requested `displayName` change (always) and `avatarUrl` change (only if
- * `command.avatarUrl !== undefined` — see the command's doc comment for
- * the three-state contract), persisting once both are applied. Needs
+ * requested `displayName` change (always) and `avatarUrl`/`locale`/
+ * `timezone` changes (only for each key where the command's own field
+ * `!== undefined` — see the command's doc comment for the three-state
+ * contract), persisting once all are applied. Needs
  * `IUserWriteRepository` directly (not just the find-or-create service) for
  * this second, profile-update-specific save.
  */
@@ -52,6 +53,12 @@ export class UpdateUserProfileHandler
     user.rename(command.displayName);
     if (command.avatarUrl !== undefined) {
       user.updateAvatarUrl(command.avatarUrl);
+    }
+    if (command.locale !== undefined) {
+      user.updateLocale(command.locale);
+    }
+    if (command.timezone !== undefined) {
+      user.updateTimezone(command.timezone);
     }
     await this.userWriteRepository.save(user);
 

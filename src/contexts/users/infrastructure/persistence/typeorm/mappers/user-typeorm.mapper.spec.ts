@@ -10,6 +10,8 @@ function buildEntity(overrides: Partial<UserEntity> = {}): UserEntity {
   entity.email = 'alice@example.com';
   entity.displayName = 'Alice';
   entity.avatarUrl = 'https://example.com/avatar.png';
+  entity.locale = 'en-US';
+  entity.timezone = 'America/New_York';
   entity.createdAt = new Date('2026-01-01T00:00:00.000Z');
   entity.updatedAt = new Date('2026-01-01T00:00:00.000Z');
   return Object.assign(entity, overrides);
@@ -34,6 +36,8 @@ describe('UserTypeOrmMapper', () => {
       expect(aggregate.email?.value).toBe(entity.email);
       expect(aggregate.displayName.value).toBe(entity.displayName);
       expect(aggregate.avatarUrl?.value).toBe(entity.avatarUrl);
+      expect(aggregate.locale?.value).toBe(entity.locale);
+      expect(aggregate.timezone?.value).toBe(entity.timezone);
       expect(aggregate.createdAt.value).toEqual(entity.createdAt);
       expect(aggregate.updatedAt.value).toEqual(entity.updatedAt);
     });
@@ -52,6 +56,22 @@ describe('UserTypeOrmMapper', () => {
       const aggregate = mapper.toAggregate(entity);
 
       expect(aggregate.avatarUrl).toBeNull();
+    });
+
+    it('maps a null locale through to the aggregate', () => {
+      const entity = buildEntity({ locale: null });
+
+      const aggregate = mapper.toAggregate(entity);
+
+      expect(aggregate.locale).toBeNull();
+    });
+
+    it('maps a null timezone through to the aggregate', () => {
+      const entity = buildEntity({ timezone: null });
+
+      const aggregate = mapper.toAggregate(entity);
+
+      expect(aggregate.timezone).toBeNull();
     });
 
     /** Same reused-builder-instance safety concern verified for `TenantTypeOrmMapper`
@@ -85,6 +105,8 @@ describe('UserTypeOrmMapper', () => {
         .withEmail('alice@example.com')
         .withDisplayName('Alice')
         .withAvatarUrl('https://example.com/avatar.png')
+        .withLocale('en-US')
+        .withTimezone('America/New_York')
         .withCreatedAt(new Date('2026-01-01T00:00:00.000Z'))
         .withUpdatedAt(new Date('2026-01-01T00:00:00.000Z'))
         .build();
@@ -97,6 +119,8 @@ describe('UserTypeOrmMapper', () => {
       expect(entity.email).toBe(aggregate.email?.value);
       expect(entity.displayName).toBe(aggregate.displayName.value);
       expect(entity.avatarUrl).toBe(aggregate.avatarUrl?.value);
+      expect(entity.locale).toBe(aggregate.locale?.value);
+      expect(entity.timezone).toBe(aggregate.timezone?.value);
       expect(entity.createdAt).toEqual(aggregate.createdAt.value);
       expect(entity.updatedAt).toEqual(aggregate.updatedAt.value);
     });
@@ -114,6 +138,8 @@ describe('UserTypeOrmMapper', () => {
       expect(viewModel.email).toBe(entity.email);
       expect(viewModel.displayName).toBe(entity.displayName);
       expect(viewModel.avatarUrl).toBe(entity.avatarUrl);
+      expect(viewModel.locale).toBe(entity.locale);
+      expect(viewModel.timezone).toBe(entity.timezone);
       expect(viewModel.createdAt).toEqual(entity.createdAt);
       expect(viewModel.updatedAt).toEqual(entity.updatedAt);
     });

@@ -47,6 +47,12 @@ export class UserEntity {
   @Column({ name: 'avatar_url', type: 'varchar', nullable: true })
   avatarUrl!: string | null;
 
+  @Column({ name: 'locale', type: 'varchar', nullable: true })
+  locale!: string | null;
+
+  @Column({ name: 'timezone', type: 'varchar', nullable: true })
+  timezone!: string | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

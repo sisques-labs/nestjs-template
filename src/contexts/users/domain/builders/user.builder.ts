@@ -4,12 +4,14 @@ import {
   DateValueObject,
   EmailValueObject,
   FieldIsRequiredException,
+  TimezoneValueObject,
   UrlValueObject,
 } from '@sisques-labs/nestjs-kit';
 import { UserAggregate } from '@contexts/users/domain/aggregates/user.aggregate';
 import { UserDisplayNameValueObject } from '@contexts/users/domain/value-objects/user-display-name/user-display-name.vo';
 import { UserExternalIdValueObject } from '@contexts/users/domain/value-objects/user-external-id/user-external-id.vo';
 import { UserIdValueObject } from '@contexts/users/domain/value-objects/user-id/user-id.vo';
+import { UserLocaleValueObject } from '@contexts/users/domain/value-objects/user-locale/user-locale.vo';
 import { UserTenantIdValueObject } from '@contexts/users/domain/value-objects/user-tenant-id/user-tenant-id.vo';
 import { UserViewModel } from '@contexts/users/domain/view-models/user.view-model';
 
@@ -27,6 +29,8 @@ export class UserBuilder extends BaseBuilder<UserAggregate, UserViewModel> {
   private _email: string | null = null;
   private _displayName!: string;
   private _avatarUrl: string | null = null;
+  private _locale: string | null = null;
+  private _timezone: string | null = null;
 
   withTenantId(tenantId: string): this {
     this._tenantId = tenantId;
@@ -53,6 +57,16 @@ export class UserBuilder extends BaseBuilder<UserAggregate, UserViewModel> {
     return this;
   }
 
+  withLocale(locale: string | null): this {
+    this._locale = locale;
+    return this;
+  }
+
+  withTimezone(timezone: string | null): this {
+    this._timezone = timezone;
+    return this;
+  }
+
   override validate(): void {
     super.validate();
     if (!this._tenantId) {
@@ -75,6 +89,10 @@ export class UserBuilder extends BaseBuilder<UserAggregate, UserViewModel> {
       email: this._email ? new EmailValueObject(this._email) : null,
       displayName: new UserDisplayNameValueObject(this._displayName),
       avatarUrl: this._avatarUrl ? new UrlValueObject(this._avatarUrl) : null,
+      locale: this._locale ? new UserLocaleValueObject(this._locale) : null,
+      timezone: this._timezone
+        ? new TimezoneValueObject(this._timezone, { validateExistence: false })
+        : null,
       createdAt: new DateValueObject(this._createdAt),
       updatedAt: new DateValueObject(this._updatedAt),
     });
@@ -89,6 +107,8 @@ export class UserBuilder extends BaseBuilder<UserAggregate, UserViewModel> {
       email: this._email,
       displayName: this._displayName,
       avatarUrl: this._avatarUrl,
+      locale: this._locale,
+      timezone: this._timezone,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     });

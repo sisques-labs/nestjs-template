@@ -104,6 +104,8 @@ describe('FindOrCreateUserByExternalIdService', () => {
     expect(result.externalId.value).toBe('sub-99');
     expect(result.displayName.value).toBe('bob');
     expect(result.avatarUrl).toBeNull();
+    expect(result.locale).toBeNull();
+    expect(result.timezone).toBeNull();
     expect(result.getUncommittedEvents()).toHaveLength(1);
   });
 

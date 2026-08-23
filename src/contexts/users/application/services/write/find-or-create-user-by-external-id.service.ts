@@ -67,6 +67,8 @@ export class FindOrCreateUserByExternalIdService {
       .withEmail(email?.value ?? null)
       .withDisplayName(defaultDisplayName(email, externalId))
       .withAvatarUrl(null)
+      .withLocale(null)
+      .withTimezone(null)
       .withCreatedAt(new Date())
       .withUpdatedAt(new Date())
       .build();

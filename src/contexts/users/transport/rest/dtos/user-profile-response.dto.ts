@@ -24,6 +24,12 @@ export class UserProfileResponseDto {
   @ApiProperty({ nullable: true })
   avatarUrl!: string | null;
 
+  @ApiProperty({ nullable: true })
+  locale!: string | null;
+
+  @ApiProperty({ nullable: true })
+  timezone!: string | null;
+
   @ApiProperty()
   tenantId!: string;
 
@@ -39,6 +45,8 @@ export class UserProfileResponseDto {
     dto.email = viewModel.email;
     dto.displayName = viewModel.displayName;
     dto.avatarUrl = viewModel.avatarUrl;
+    dto.locale = viewModel.locale;
+    dto.timezone = viewModel.timezone;
     dto.tenantId = viewModel.tenantId;
     dto.createdAt = viewModel.createdAt;
     dto.updatedAt = viewModel.updatedAt;
