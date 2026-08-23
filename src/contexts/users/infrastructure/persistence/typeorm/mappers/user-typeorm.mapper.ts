@@ -30,6 +30,7 @@ export class UserTypeOrmMapper extends BaseDatabaseMapper<
       .withExternalId(entity.externalId)
       .withEmail(entity.email)
       .withDisplayName(entity.displayName)
+      .withAvatarUrl(entity.avatarUrl)
       .withCreatedAt(entity.createdAt)
       .withUpdatedAt(entity.updatedAt)
       .build();
@@ -44,6 +45,7 @@ export class UserTypeOrmMapper extends BaseDatabaseMapper<
     entity.externalId = primitives.externalId;
     entity.email = primitives.email;
     entity.displayName = primitives.displayName;
+    entity.avatarUrl = primitives.avatarUrl;
     entity.createdAt = primitives.createdAt;
     entity.updatedAt = primitives.updatedAt;
     return entity;
@@ -57,6 +59,7 @@ export class UserTypeOrmMapper extends BaseDatabaseMapper<
       .withExternalId(entity.externalId)
       .withEmail(entity.email)
       .withDisplayName(entity.displayName)
+      .withAvatarUrl(entity.avatarUrl)
       .withCreatedAt(entity.createdAt)
       .withUpdatedAt(entity.updatedAt)
       .buildViewModel();

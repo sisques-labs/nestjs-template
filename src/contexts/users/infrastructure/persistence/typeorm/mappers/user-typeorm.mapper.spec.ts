@@ -9,6 +9,7 @@ function buildEntity(overrides: Partial<UserEntity> = {}): UserEntity {
   entity.externalId = 'sub-42';
   entity.email = 'alice@example.com';
   entity.displayName = 'Alice';
+  entity.avatarUrl = 'https://example.com/avatar.png';
   entity.createdAt = new Date('2026-01-01T00:00:00.000Z');
   entity.updatedAt = new Date('2026-01-01T00:00:00.000Z');
   return Object.assign(entity, overrides);
@@ -32,6 +33,7 @@ describe('UserTypeOrmMapper', () => {
       expect(aggregate.externalId.value).toBe(entity.externalId);
       expect(aggregate.email?.value).toBe(entity.email);
       expect(aggregate.displayName.value).toBe(entity.displayName);
+      expect(aggregate.avatarUrl?.value).toBe(entity.avatarUrl);
       expect(aggregate.createdAt.value).toEqual(entity.createdAt);
       expect(aggregate.updatedAt.value).toEqual(entity.updatedAt);
     });
@@ -42,6 +44,14 @@ describe('UserTypeOrmMapper', () => {
       const aggregate = mapper.toAggregate(entity);
 
       expect(aggregate.email).toBeNull();
+    });
+
+    it('maps a null avatarUrl through to the aggregate', () => {
+      const entity = buildEntity({ avatarUrl: null });
+
+      const aggregate = mapper.toAggregate(entity);
+
+      expect(aggregate.avatarUrl).toBeNull();
     });
 
     /** Same reused-builder-instance safety concern verified for `TenantTypeOrmMapper`
@@ -74,6 +84,7 @@ describe('UserTypeOrmMapper', () => {
         .withExternalId('sub-42')
         .withEmail('alice@example.com')
         .withDisplayName('Alice')
+        .withAvatarUrl('https://example.com/avatar.png')
         .withCreatedAt(new Date('2026-01-01T00:00:00.000Z'))
         .withUpdatedAt(new Date('2026-01-01T00:00:00.000Z'))
         .build();
@@ -85,6 +96,7 @@ describe('UserTypeOrmMapper', () => {
       expect(entity.externalId).toBe(aggregate.externalId.value);
       expect(entity.email).toBe(aggregate.email?.value);
       expect(entity.displayName).toBe(aggregate.displayName.value);
+      expect(entity.avatarUrl).toBe(aggregate.avatarUrl?.value);
       expect(entity.createdAt).toEqual(aggregate.createdAt.value);
       expect(entity.updatedAt).toEqual(aggregate.updatedAt.value);
     });
@@ -101,6 +113,7 @@ describe('UserTypeOrmMapper', () => {
       expect(viewModel.externalId).toBe(entity.externalId);
       expect(viewModel.email).toBe(entity.email);
       expect(viewModel.displayName).toBe(entity.displayName);
+      expect(viewModel.avatarUrl).toBe(entity.avatarUrl);
       expect(viewModel.createdAt).toEqual(entity.createdAt);
       expect(viewModel.updatedAt).toEqual(entity.updatedAt);
     });

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { UpdateUserDisplayNameHandler } from '@contexts/users/application/commands/update-user-display-name/update-user-display-name.handler';
+import { UpdateUserProfileHandler } from '@contexts/users/application/commands/update-user-profile/update-user-profile.handler';
 import { UpsertUserFromClaimHandler } from '@contexts/users/application/commands/upsert-user-from-claim/upsert-user-from-claim.handler';
 import { FindOrCreateUserByExternalIdService } from '@contexts/users/application/services/write/find-or-create-user-by-external-id.service';
 import { UserBuilder } from '@contexts/users/domain/builders/user.builder';
@@ -13,10 +13,7 @@ import { UserTypeOrmMapper } from '@contexts/users/infrastructure/persistence/ty
 import { UserTypeOrmReadRepository } from '@contexts/users/infrastructure/persistence/typeorm/repositories/user-typeorm-read.repository';
 import { UserTypeOrmWriteRepository } from '@contexts/users/infrastructure/persistence/typeorm/repositories/user-typeorm-write.repository';
 
-const COMMAND_HANDLERS = [
-  UpsertUserFromClaimHandler,
-  UpdateUserDisplayNameHandler,
-];
+const COMMAND_HANDLERS = [UpsertUserFromClaimHandler, UpdateUserProfileHandler];
 const APPLICATION_SERVICES = [FindOrCreateUserByExternalIdService];
 const DOMAIN_BUILDERS = [UserBuilder];
 const INFRASTRUCTURE_REPOSITORIES = [

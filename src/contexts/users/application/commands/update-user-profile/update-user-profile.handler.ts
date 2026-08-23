@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { BaseCommandHandler } from '@sisques-labs/nestjs-kit';
 
-import { UpdateUserDisplayNameCommand } from '@contexts/users/application/commands/update-user-display-name/update-user-display-name.command';
+import { UpdateUserProfileCommand } from '@contexts/users/application/commands/update-user-profile/update-user-profile.command';
 import { FindOrCreateUserByExternalIdService } from '@contexts/users/application/services/write/find-or-create-user-by-external-id.service';
 import { UserAggregate } from '@contexts/users/domain/aggregates/user.aggregate';
 import {
@@ -14,17 +14,19 @@ import { UserViewModel } from '@contexts/users/domain/view-models/user.view-mode
 /**
  * Finds or creates the `User` (same as `UpsertUserFromClaimHandler`),
  * publishes its creation event if it was newly created, then applies the
- * requested `displayName` change and persists it. Needs
+ * requested `displayName` change (always) and `avatarUrl` change (only if
+ * `command.avatarUrl !== undefined` — see the command's doc comment for
+ * the three-state contract), persisting once both are applied. Needs
  * `IUserWriteRepository` directly (not just the find-or-create service) for
- * this second, rename-specific save.
+ * this second, profile-update-specific save.
  */
-@CommandHandler(UpdateUserDisplayNameCommand)
+@CommandHandler(UpdateUserProfileCommand)
 @Injectable()
-export class UpdateUserDisplayNameHandler
-  extends BaseCommandHandler<UpdateUserDisplayNameCommand, UserAggregate>
-  implements ICommandHandler<UpdateUserDisplayNameCommand, UserViewModel>
+export class UpdateUserProfileHandler
+  extends BaseCommandHandler<UpdateUserProfileCommand, UserAggregate>
+  implements ICommandHandler<UpdateUserProfileCommand, UserViewModel>
 {
-  private readonly logger = new Logger(UpdateUserDisplayNameHandler.name);
+  private readonly logger = new Logger(UpdateUserProfileHandler.name);
 
   constructor(
     eventBus: EventBus,
@@ -35,7 +37,7 @@ export class UpdateUserDisplayNameHandler
     super(eventBus);
   }
 
-  async execute(command: UpdateUserDisplayNameCommand): Promise<UserViewModel> {
+  async execute(command: UpdateUserProfileCommand): Promise<UserViewModel> {
     const user = await this.findOrCreateUserByExternalIdService.execute(
       command.tenantId,
       command.externalId,
@@ -48,10 +50,13 @@ export class UpdateUserDisplayNameHandler
     }
 
     user.rename(command.displayName);
+    if (command.avatarUrl !== undefined) {
+      user.updateAvatarUrl(command.avatarUrl);
+    }
     await this.userWriteRepository.save(user);
 
     this.logger.log(
-      `User ${user.id.value} displayName updated (tenantId="${command.tenantId.value}")`,
+      `User ${user.id.value} profile updated (tenantId="${command.tenantId.value}")`,
     );
 
     return new UserViewModel(user.toPrimitives());
