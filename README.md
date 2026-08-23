@@ -41,6 +41,7 @@ every subsequent one follows (see the `architecture` skill in
 | Health checks | `src/core/health/` | `GET /api/health/live` (liveness), `GET /api/health/ready` (DB ping via `@nestjs/terminus`) |
 | Identity | `src/core/identity/` | Opt-in (`IDENTITY_PROVIDER`), provider-agnostic bridge (Cognito/Supabase/OIDC) — bearer-token `POST /auth/login`+`/refresh` plus an opt-in (`OAUTH_SESSION_ENABLED`) OAuth/BFF cookie-session login (`/auth/oauth/*`), `IdentityGuard`/`RolesGuard`/`@CurrentUser()`, see `src/core/identity/README.md` |
 | Tenancy | `src/core/tenancy/`, `src/contexts/tenant/` | Opt-in (`TENANCY_ENABLED`, requires `IDENTITY_PROVIDER`) — `TenantGuard`+`TenantContextInterceptor` resolve/seed the current request's tenant from `IPrincipal.tenantId` via `TenantContextService`; `TenantScopedRepository` is the base class future contexts extend for automatic tenant-filtered queries. See `src/core/tenancy/README.md` |
+| Users | `src/contexts/users/` | Self-service `GET`/`PATCH /api/users/me` — a tenant-scoped profile (`displayName`, `email`) lazily created from the verified principal, the first real consumer of `TenantScopedRepository`. Opt-in (registers only when `IDENTITY_PROVIDER && TENANCY_ENABLED`). See `src/contexts/users/README.md` |
 | Logging | `src/support/logging/` | Winston via `@sisques-labs/nestjs-kit`, JSON file + console transports, plus an OTel transport forwarding to the pipeline below |
 | Kafka event forwarding | `@sisques-labs/nestjs-kit/messaging` (wired in `src/core/core.module.ts`); `src/core/messaging/` keeps only the app-local, auto-generated aggregate→topic map | Opt-in (`KAFKA_ENABLED`), no-op when disabled |
 | OpenTelemetry | `src/telemetry.ts` (bootstrap), `src/core/observability/` (CQRS spans+metrics) | Traces + metrics + logs exported via OTLP to a collector; all disabled together until `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Auto-instruments HTTP/Express, GraphQL, Postgres, Kafka; CQRS command/query buses get spans + duration/count metrics; every Winston log line is forwarded too (`@opentelemetry/winston-transport`), correlated with the active span. `docker-compose.yml` ships a local collector + Jaeger UI (`:16686`) + Prometheus UI (`:9090`) — logs currently just land in the collector's own output (no local log backend wired up yet; swap the `logs` exporter in `docker/otel-collector-config.yaml` for Loki or similar when ready) |
@@ -58,19 +59,21 @@ specific enough that they'd bias the template toward one shape:
 - **Multi-tenancy is opt-in, not absent** — `src/core/tenancy/` is a
   cross-cutting module (`TenantGuard`, `TenantContextInterceptor`,
   `TenantContextService`, `TenantScopedRepository`) that's inert until you
-  set `TENANCY_ENABLED=true`, plus `src/contexts/tenant/`, this template's
-  one bounded context, which owns the `Tenant` record itself. What it does
-  NOT give you is a tenant-owned business context — there's still no
-  `users` (or similar) context scoped to a tenant, so most services will
-  need to build their first tenant-scoped context on top of this
-  mechanism. `src/core/filters/base-exception.filter.ts` also has a
-  documented extension point for tenant-aware exception handling. See
+  set `TENANCY_ENABLED=true`, plus `src/contexts/tenant/`, which owns the
+  `Tenant` record itself, and `src/contexts/users/`, a tenant-scoped `User`
+  profile — this template's first real consumer of `TenantScopedRepository`
+  and a worked example for any further tenant-owned context you add.
+  `src/core/filters/base-exception.filter.ts` also has a documented
+  extension point for tenant-aware exception handling. See
   `src/core/tenancy/README.md`.
 - **Auth is opt-in, not absent** — `src/core/identity/` is a
   provider-agnostic bridge (Cognito, Supabase, or any OIDC-compliant IdP)
   that's inert until you set `IDENTITY_PROVIDER`. It's cross-cutting
-  infrastructure, not a bounded context: no local user table, the IdP is
-  always the source of truth. See `src/core/identity/README.md`.
+  infrastructure, not a bounded context: it holds no local user table
+  itself, the IdP is always the source of truth for authentication. (A
+  local *profile* — `displayName`, tenant membership — is a separate,
+  optional concern; see `src/contexts/users/README.md`.) See
+  `src/core/identity/README.md`.
 - **Bounded contexts / business domain** — this is infrastructure only.
 - **MongoDB** — `@sisques-labs/nestjs-kit/mongodb` is available if a service
   needs it alongside or instead of Postgres.
