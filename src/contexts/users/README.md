@@ -3,10 +3,12 @@
 This template's second bounded context. A `User` is a tenant-scoped profile:
 an internal `id`, a `tenantId` (the owning `Tenant`'s internal id), the
 IdP-supplied `externalId` (`sub` claim), `email` (synced from the verified
-token, never user-editable), and `displayName` (the only user-owned field).
-Lazily created the first time a given principal is seen within a given
-tenant — see `openspec/changes/add-users-context/` for the full proposal
-and design rationale.
+token, never user-editable), and two user-owned fields, `displayName` and
+`avatarUrl` (both start unset — `displayName` defaults from the email
+claim, `avatarUrl` starts `null` — and are only ever changed via
+`PATCH /users/me`). Lazily created the first time a given principal is
+seen within a given tenant — see `openspec/changes/add-users-context/` for
+the full proposal and design rationale.
 
 ## What it provides
 
@@ -15,10 +17,12 @@ and design rationale.
   finds the `User` for that `(tenantId, externalId)` pair, or creates one if
   this is the first time it's been seen, re-syncing `email` either way, and
   returns the current `UserViewModel`.
-- **`UpdateUserDisplayNameCommand`** — same find-or-create path, then
-  applies the requested `displayName` and persists it. A caller can set
-  their display name on their very first request, without a prior upsert
-  having created the row first.
+- **`UpdateUserProfileCommand`** — same find-or-create path, then always
+  applies the requested `displayName` and, only when the caller's input
+  included the key at all, applies `avatarUrl` (a three-state field:
+  omitted = untouched, `null` = cleared, a URL = set — see the command's
+  doc comment). A caller can set their profile on their very first
+  request, without a prior upsert having created the row first.
 
 Both commands return a `UserViewModel`, not just an id — unusual for a
 command handler in this codebase, but both `/users/me` REST verbs need the
@@ -65,11 +69,12 @@ users/
 │   │   ├── user-tenant-id/                      — UserTenantIdValueObject (this context's own Tenant reference)
 │   │   ├── user-external-id/                    — UserExternalIdValueObject (non-empty string)
 │   │   └── user-display-name/                   — UserDisplayNameValueObject (non-empty, max length)
+│   │       (avatarUrl uses nestjs-kit's UrlValueObject directly — no local subclass, same as email/EmailValueObject)
 │   └── view-models/user.view-model.ts           — UserViewModel (read-side projection)
 ├── application/
 │   ├── commands/
 │   │   ├── upsert-user-from-claim/              — UpsertUserFromClaimCommand + handler
-│   │   └── update-user-display-name/            — UpdateUserDisplayNameCommand + handler
+│   │   └── update-user-profile/                 — UpdateUserProfileCommand + handler
 │   └── services/write/
 │       └── find-or-create-user-by-external-id.service.ts — shared find-or-create-and-resync logic
 ├── infrastructure/
@@ -114,7 +119,7 @@ benefit. See each repository's own doc comment.
 
 See `openspec/changes/add-users-context/` for the full proposal, design
 rationale (including sequence diagrams), and delta specs. Explicitly out
-of scope for v1: any field beyond `displayName`/`email`, an admin/by-id
-API, and a cross-cutting `core/`-level "current user" concept analogous to
-`TenantContextService` — nothing outside this context needs to resolve
-"the current user" yet.
+of scope for v1: any field beyond `displayName`/`email`/`avatarUrl`, an
+admin/by-id API, and a cross-cutting `core/`-level "current user" concept
+analogous to `TenantContextService` — nothing outside this context needs
+to resolve "the current user" yet.

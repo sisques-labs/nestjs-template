@@ -14,6 +14,7 @@ export class UserViewModel extends BaseViewModel {
   private readonly _externalId: string;
   private readonly _email: string | null;
   private readonly _displayName: string;
+  private readonly _avatarUrl: string | null;
 
   constructor(primitives: UserPrimitives) {
     super(primitives.id, primitives.createdAt, primitives.updatedAt);
@@ -21,6 +22,7 @@ export class UserViewModel extends BaseViewModel {
     this._externalId = primitives.externalId;
     this._email = primitives.email;
     this._displayName = primitives.displayName;
+    this._avatarUrl = primitives.avatarUrl;
   }
 
   get tenantId(): string {
@@ -37,5 +39,9 @@ export class UserViewModel extends BaseViewModel {
 
   get displayName(): string {
     return this._displayName;
+  }
+
+  get avatarUrl(): string | null {
+    return this._avatarUrl;
   }
 }

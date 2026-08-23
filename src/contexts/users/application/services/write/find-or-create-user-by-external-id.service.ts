@@ -17,6 +17,8 @@ import { UserTenantIdValueObject } from '@contexts/users/domain/value-objects/us
  * be a correctness bug. The email write is itself skipped when the
  * supplied value already matches the stored one, so a returning user's
  * every request doesn't force a database write when nothing changed.
+ * `avatarUrl` (like `displayName`) starts `null` on creation and is never
+ * touched here afterward — it's only ever set via `UpdateUserProfileCommand`.
  *
  * Returns the resulting `UserAggregate` — deliberately the **in-memory**
  * aggregate that had `create()`/`syncEmail()` called on it, not
@@ -64,6 +66,7 @@ export class FindOrCreateUserByExternalIdService {
       .withExternalId(externalId.value)
       .withEmail(email?.value ?? null)
       .withDisplayName(defaultDisplayName(email, externalId))
+      .withAvatarUrl(null)
       .withCreatedAt(new Date())
       .withUpdatedAt(new Date())
       .build();
