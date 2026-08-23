@@ -46,7 +46,8 @@ endpoint.
 - **AND** no `User` row exists yet for this tenant + `sub-42`
 - **WHEN** `GET /users/me` is called
 - **THEN** the response is `200` with the newly created profile
-  (`displayName` defaulted per `user-profile`'s upsert requirement)
+  (`displayName` defaulted per `user-profile`'s upsert requirement,
+  `avatarUrl: null`)
 
 #### Scenario: Subsequent request for the same principal
 
@@ -60,12 +61,13 @@ endpoint.
 - **WHEN** `GET /users/me` is called
 - **THEN** the response is `401` (`IdentityGuard`)
 
-### Requirement: PATCH /users/me updates only displayName
+### Requirement: PATCH /users/me updates displayName and/or avatarUrl
 
-`PATCH /users/me` MUST accept a `displayName` field and update only that
-field on the caller's own `User` row. `email`, `externalId`, and
-`tenantId` MUST NOT be settable through this endpoint — they are derived
-exclusively from the verified token and the resolved tenant.
+`PATCH /users/me` MUST accept a required `displayName` field and an
+optional `avatarUrl` field, updating only those on the caller's own
+`User` row. `email`, `externalId`, and `tenantId` MUST NOT be settable
+through this endpoint — they are derived exclusively from the verified
+token and the resolved tenant.
 
 #### Scenario: Update own display name
 
@@ -74,6 +76,31 @@ exclusively from the verified token and the resolved tenant.
 - **WHEN** `PATCH /users/me` is called with `{ "displayName": "Alicia" }`
 - **THEN** the response is `200` with `displayName: "Alicia"`
 - **AND** the row's `email`/`externalId`/`tenantId` are unchanged
+- **AND** the row's `avatarUrl` is unchanged — the key was omitted, not
+  sent as `null`
+
+#### Scenario: Set avatarUrl
+
+- **GIVEN** a valid bearer token resolving to a principal with an existing
+  `User` row
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "avatarUrl": "https://example.com/a.png" }`
+- **THEN** the response is `200` with `avatarUrl: "https://example.com/a.png"`
+
+#### Scenario: Clear avatarUrl with an explicit null
+
+- **GIVEN** a valid bearer token resolving to a principal with an existing
+  `User` row whose `avatarUrl` is currently set
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "avatarUrl": null }`
+- **THEN** the response is `200` with `avatarUrl: null`
+
+#### Scenario: Reject a non-URL avatarUrl
+
+- **GIVEN** a valid bearer token
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "avatarUrl": "not-a-url" }`
+- **THEN** the response is `400`, and no write occurs
 
 #### Scenario: Attempt to set email via the request body
 

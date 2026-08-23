@@ -72,17 +72,19 @@ the same tenant + externalId cannot produce two `User` rows.
 
 ### Requirement: Update own display name
 
-`UpdateUserDisplayNameCommand` MUST update the `displayName` of the `User`
+`UpdateUserProfileCommand` MUST update the `displayName` of the `User`
 identified by `(tenantId, externalId)`, creating the row first (via the
 same find-or-create path as the upsert command) if it does not exist yet —
 a caller MUST be able to set their display name on their very first
-request, without a prior `GET` having created the row.
+request, without a prior `GET` having created the row. `displayName` is
+always present in the command input and always applied — there is no
+"leave it as-is" case for this field.
 
 #### Scenario: Update display name for an existing user
 
 - **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`,
   `displayName = "Alice"`
-- **WHEN** `UpdateUserDisplayNameCommand({ tenantId: "t-1", externalId: "sub-42", email: "a@example.com", displayName: "Alicia" })`
+- **WHEN** `UpdateUserProfileCommand({ tenantId: "t-1", externalId: "sub-42", email: "a@example.com", displayName: "Alicia" })`
   is dispatched
 - **THEN** the row's `displayName` becomes `"Alicia"`
 - **AND** no new row is created
@@ -90,7 +92,7 @@ request, without a prior `GET` having created the row.
 #### Scenario: Update display name for a user that doesn't exist yet
 
 - **GIVEN** no `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`
-- **WHEN** `UpdateUserDisplayNameCommand({ tenantId: "t-1", externalId: "sub-42", email: "a@example.com", displayName: "Alicia" })`
+- **WHEN** `UpdateUserProfileCommand({ tenantId: "t-1", externalId: "sub-42", email: "a@example.com", displayName: "Alicia" })`
   is dispatched
 - **THEN** a new `User` row is created for that `tenantId`/`externalId`
 - **AND** its `displayName` is `"Alicia"` (not the default derived from `email`)
@@ -98,6 +100,44 @@ request, without a prior `GET` having created the row.
 #### Scenario: Display name rejected when blank
 
 - **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`
-- **WHEN** `UpdateUserDisplayNameCommand` is dispatched with `displayName: ""`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `displayName: ""`
 - **THEN** the command MUST be rejected by `UserDisplayNameValueObject`'s
   validation before any write is attempted
+
+### Requirement: Update own avatarUrl (three-state)
+
+`UpdateUserProfileCommand`'s `avatarUrl` input MUST be treated as a
+three-state field, distinct from `displayName`: omitting it from the
+command input MUST leave the `User`'s stored `avatarUrl` unchanged,
+supplying `null` MUST clear it, and supplying a URL string MUST set it.
+
+#### Scenario: avatarUrl omitted from the command
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`,
+  `avatarUrl = "https://example.com/old.png"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `displayName`
+  set and no `avatarUrl` key at all
+- **THEN** the row's `avatarUrl` remains `"https://example.com/old.png"`
+
+#### Scenario: avatarUrl set to a new value
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with
+  `avatarUrl: "https://example.com/new.png"`
+- **THEN** the row's `avatarUrl` becomes `"https://example.com/new.png"`
+
+#### Scenario: avatarUrl cleared with an explicit null
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`,
+  `avatarUrl = "https://example.com/old.png"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `avatarUrl: null`
+- **THEN** the row's `avatarUrl` becomes `null`
+
+#### Scenario: New user created via PATCH defaults avatarUrl to null
+
+- **GIVEN** no `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `displayName`
+  set and no `avatarUrl` key
+- **THEN** the newly created row's `avatarUrl` is `null` (the creation
+  default — omitting the key on this first-ever call still means
+  "untouched", i.e. left at its default, not derived from anything)

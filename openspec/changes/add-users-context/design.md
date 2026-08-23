@@ -24,17 +24,19 @@ src/contexts/users/
 │   ├── exceptions/
 │   │   └── user-not-found.exception.ts   — extends BaseException
 │   ├── interfaces/
-│   │   └── user.interface.ts             — IUser (id, tenantId, externalId, email, displayName — all VOs)
+│   │   └── user.interface.ts             — IUser (id, tenantId, externalId, email, displayName, avatarUrl — all VOs)
 │   ├── primitives/
 │   │   └── user.primitives.ts            — extends BasePrimitives
 │   ├── repositories/
 │   │   ├── read/user-read.repository.ts  — interface + DI token (Symbol)
 │   │   └── write/user-write.repository.ts — interface + DI token (Symbol); findByExternalId(tenantId, externalId)
 │   ├── value-objects/
+│   │   ├── user-id/user-id.vo.ts         — UuidValueObject subclass
 │   │   ├── user-tenant-id/user-tenant-id.vo.ts   — UuidValueObject subclass; THIS context's own reference type
 │   │   ├── user-external-id/user-external-id.vo.ts — StringValueObject subclass, non-empty
-│   │   ├── user-email/user-email.vo.ts   — StringValueObject subclass, format-validated; nullable field, not a nullable VO
 │   │   └── user-display-name/user-display-name.vo.ts — StringValueObject subclass, non-empty, max length
+│   │       (`email`/`avatarUrl` use nestjs-kit's `EmailValueObject`/`UrlValueObject` directly — no local
+│   │       subclass needed, both are nullable fields rather than nullable VOs)
 │   └── view-models/
 │       └── user.view-model.ts            — extends BaseViewModel
 ├── application/
@@ -42,9 +44,9 @@ src/contexts/users/
 │   │   ├── upsert-user-from-claim/
 │   │   │   ├── upsert-user-from-claim.command.ts   — { tenantId, externalId, email }
 │   │   │   └── upsert-user-from-claim.handler.ts   — find-or-create by (tenantId, externalId); re-syncs email; returns UserViewModel
-│   │   └── update-user-display-name/
-│   │       ├── update-user-display-name.command.ts — { tenantId, externalId, email, displayName }
-│   │       └── update-user-display-name.handler.ts — find-or-create (same service), then sets displayName; returns UserViewModel
+│   │   └── update-user-profile/
+│   │       ├── update-user-profile.command.ts — { tenantId, externalId, email, displayName, avatarUrl? }
+│   │       └── update-user-profile.handler.ts — find-or-create (same service), then always renames + conditionally updates avatarUrl; returns UserViewModel
 │   └── services/
 │       └── write/
 │           └── find-or-create-user-by-external-id.service.ts  — shared by both handlers, mirrors find-or-create-tenant-by-external-id.service.ts
@@ -53,15 +55,15 @@ src/contexts/users/
 │       ├── entities/user.entity.ts        — tenantId: string property (TenantScopedRepository convention)
 │       ├── mappers/user-typeorm.mapper.ts
 │       └── repositories/
-│           ├── user-typeorm-read.repository.ts   — extends TenantScopedRepository<UserEntity>
-│           └── user-typeorm-write.repository.ts  — extends TenantScopedRepository<UserEntity>
+│           ├── user-typeorm-read.repository.ts   — wraps the injected repository via createTenantScopedRepository()
+│           └── user-typeorm-write.repository.ts  — NOT wrapped; every method already takes/carries tenantId explicitly, see the repository's own doc comment
 ├── transport/
 │   └── rest/
 │       ├── users.controller.ts            — GET/PATCH /users/me, CommandBus only
 │       └── dtos/
 │           ├── user-profile-response.dto.ts
-│           └── update-user-profile.dto.ts  — { displayName: string }
-└── users.module.ts                        — controllers: [] unless IDENTITY_PROVIDER && TENANCY_ENABLED, see decision 4
+│           └── update-user-profile.dto.ts  — { displayName: string; avatarUrl?: string | null }
+└── users.module.ts                        — controllers: [] unless IDENTITY_PROVIDER && TENANCY_ENABLED, see decision 6
 ```
 
 No `application/queries/` beyond what the two commands already return —
@@ -82,14 +84,28 @@ future context needs to look up a `User` independently (not via `/me`), a
    refreshes would be a silent correctness bug, not a feature. `Tenant`
    has no analogous synced field (`externalId` never changes once set).
 
-2. **`displayName` default on creation.** Defaults to the email's local
-   part (the substring before `@`) when `email` is present, otherwise the
-   raw `externalId`. Gives a non-empty, reasonable value on the very first
-   request, without forcing every client to call `PATCH` before showing
-   anything. Only set once, at creation — `upsert-user-from-claim` never
-   overwrites an existing `displayName`.
+2. **`displayName` default on creation; `avatarUrl` has none.** `displayName`
+   defaults to the email's local part (the substring before `@`) when
+   `email` is present, otherwise the raw `externalId` — a non-empty,
+   reasonable value on the very first request, without forcing every
+   client to call `PATCH` before showing anything. `avatarUrl` starts
+   `null` instead — there's no equivalent "reasonable guess" for an
+   avatar, and a `null` renders fine as "no avatar" client-side. Neither
+   default is IdP-derived; both are only ever changed afterward via
+   `PATCH /users/me`.
 
-3. **Uniqueness is scoped per tenant, not global.** The unique constraint
+3. **`avatarUrl` is a three-state `PATCH` field; `displayName` isn't.**
+   `UpdateUserProfileCommand.avatarUrl` is `UrlValueObject | null |
+   undefined`: `undefined` (the request body omitted the key) leaves the
+   stored value untouched, `null` clears it, a URL sets it. `displayName`
+   doesn't need this — it's always required in the request body and
+   always applied, so there's no "leave it as-is" case to represent.
+   Chose to generalize the update command to accept both fields rather
+   than add a second single-field command, since `PATCH /users/me` was
+   always going to accept both in one request body — see "Alternatives
+   considered".
+
+4. **Uniqueness is scoped per tenant, not global.** The unique constraint
    is on `(tenant_id, external_id)`, not `external_id` alone. A given IdP
    `sub` is normally globally unique, but nothing in this template
    guarantees every tenant shares one identity pool — scoping the
@@ -98,24 +114,27 @@ future context needs to look up a `User` independently (not via `/me`), a
    referential integrity (the `tenants` table already exists by the time
    this migration runs, per the dependency on `add-tenant-context`).
 
-4. **Why not a `UserGuard` (the load-bearing decision in this change).**
+5. **Why not a `UserGuard` (the load-bearing decision in this change).**
    `TenantGuard` upserts `Tenant` *inside* a guard because it has a
    genuine bootstrapping problem: the tenant id doesn't exist yet, and
-   `TenantContextService` (needed by any `TenantScopedRepository`-based
-   write) isn't seeded until `TenantContextInterceptor` runs — which is
-   *after* guards. `TenantGuard` sidesteps this by never using
-   `TenantScopedRepository` for `Tenant` itself (a `Tenant` row has no
-   `tenant_id` column — it *is* the tenant).
+   `TenantContextService` (needed by any `createTenantScopedRepository()`
+   -wrapped read) isn't seeded until `TenantContextInterceptor` runs —
+   which is *after* guards. `TenantGuard` sidesteps this by never scoping
+   `Tenant`'s own repositories this way (a `Tenant` row has no `tenant_id`
+   column — it *is* the tenant).
 
-   `User`, by contrast, **does** have a `tenant_id` column and its
-   repositories **do** extend `TenantScopedRepository` — which means they
-   can only safely run once `TenantContextService` is seeded, i.e. from
-   inside the route handler, after `TenantContextInterceptor` has already
-   run. Putting the upsert in a `UserGuard` would hit exactly the
-   bootstrapping problem `TenantGuard` was built to avoid, one layer
+   `User`, by contrast, **does** have a `tenant_id` column, and its read
+   repository **is** wrapped via `createTenantScopedRepository()` — which
+   means it can only safely run once `TenantContextService` is seeded,
+   i.e. from inside the route handler, after `TenantContextInterceptor`
+   has already run. Putting the upsert in a `UserGuard` would hit exactly
+   the bootstrapping problem `TenantGuard` was built to avoid, one layer
    later: the guard would run before `TenantContextInterceptor`, and any
-   `TenantScopedRepository`-based write attempted from inside it would
-   throw `NoTenantContextException`.
+   scoped read attempted from inside it would throw
+   `NoTenantContextException`. (The write repository sidesteps this
+   entirely by not using the wrapper at all — every write method already
+   carries `tenantId` explicitly — but the read side still needs it, and a
+   guard is still the wrong place to run any of this.)
 
    So `UpsertUserFromClaimCommand` is dispatched from
    `UsersController`'s route handlers themselves (after
@@ -126,7 +145,7 @@ future context needs to look up a `User` independently (not via `/me`), a
    future context needs "the current tenant" — see proposal.md's "Out of
    scope" for the cross-cutting version, deliberately not built now.
 
-5. **`UsersController` registration is gated, unlike `TenantModule`'s
+6. **`UsersController` registration is gated, unlike `TenantModule`'s
    always-on registration.** `add-tenant-context` could register
    `TenantModule` unconditionally in `CONTEXT_MODULES` because it shipped
    with **no transport surface** — nothing resolves `IdentityGuard`/
@@ -177,10 +196,10 @@ sequenceDiagram
     CommandBus->>Handler: handle()
     Handler->>DB: SELECT ... WHERE tenant_id = :tenantId AND external_id = :externalId
     DB-->>Handler: not found
-    Handler->>DB: INSERT user (tenant_id, external_id, email, display_name)
+    Handler->>DB: INSERT user (tenant_id, external_id, email, display_name, avatar_url=null)
     DB-->>Handler: new User row
     Handler-->>Controller: UserViewModel
-    Controller-->>Client: 200 { id, email, displayName, tenantId }
+    Controller-->>Client: 200 { id, email, displayName, avatarUrl, tenantId }
 ```
 
 ## Sequence: `PATCH /users/me`
@@ -191,26 +210,27 @@ Same guard/interceptor chain as above, then:
 sequenceDiagram
     participant Controller as UsersController
     participant CommandBus
-    participant Handler as UpdateUserDisplayNameHandler
+    participant Handler as UpdateUserProfileHandler
     participant Service as FindOrCreateUserByExternalIdService
     participant DB as Postgres (users table)
 
-    Controller->>CommandBus: execute(UpdateUserDisplayNameCommand{ tenantId, externalId, email, displayName })
+    Controller->>CommandBus: execute(UpdateUserProfileCommand{ tenantId, externalId, email, displayName, avatarUrl })
     CommandBus->>Handler: handle()
     Handler->>Service: execute(tenantId, externalId, email)
     Service->>DB: find-or-create (same as GET path)
     DB-->>Service: User row (existing or newly created)
     Service-->>Handler: UserAggregate
     Handler->>Handler: user.rename(newDisplayName)
-    Handler->>DB: UPDATE users SET display_name = ... WHERE id = ...
+    Handler->>Handler: avatarUrl !== undefined ? user.updateAvatarUrl(avatarUrl) : (no-op)
+    Handler->>DB: UPDATE users SET display_name = ..., avatar_url = ... WHERE id = ...
     Handler-->>Controller: UserViewModel
-    Controller-->>Client: 200 { id, email, displayName, tenantId }
+    Controller-->>Client: 200 { id, email, displayName, avatarUrl, tenantId }
 ```
 
 ## Alternatives considered
 
 - **A `UserGuard` mirroring `TenantGuard` exactly** — rejected, see
-  decision 4: it would reintroduce the `AsyncLocalStorage`/
+  decision 5: it would reintroduce the `AsyncLocalStorage`/
   `TenantScopedRepository` ordering problem `TenantGuard` was specifically
   designed to avoid, one layer later.
 - **A cross-cutting `UserContextService` in `src/core/`, resolved on every
@@ -220,7 +240,20 @@ sequenceDiagram
   reusable as-is if that's ever built (a future guard would just dispatch
   the same `UpsertUserFromClaimCommand`).
 - **Global unique constraint on `external_id` alone** — rejected in favor
-  of `(tenant_id, external_id)`, see decision 3.
+  of `(tenant_id, external_id)`, see decision 4.
 - **Unconditional `UsersController` registration** (matching `TenantModule`'s
-  pattern) — rejected, see decision 5: `Tenant` had no transport surface
+  pattern) — rejected, see decision 6: `Tenant` had no transport surface
   to make this unsafe; `users` does.
+- **A second, single-field `UpdateUserAvatarUrlCommand`** (mirroring the
+  original `UpdateUserDisplayNameCommand` shape) instead of generalizing
+  one command — rejected: `PATCH /users/me` was always going to accept
+  both fields in a single request body, so the controller would have had
+  to either dispatch two commands per request or pick one arbitrarily when
+  only `avatarUrl` changed. One command with an optional field matches the
+  actual HTTP contract more directly; see decision 3.
+- **Treating an omitted `avatarUrl` the same as an explicit `null`**
+  (i.e., two-state instead of three-state) — rejected: it would make
+  "don't touch my avatar" and "remove my avatar" the same request shape,
+  forcing every client that only wants to change `displayName` to
+  first read back and re-send the current `avatarUrl` just to avoid
+  accidentally clearing it.
