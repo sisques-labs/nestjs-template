@@ -1,4 +1,8 @@
-import { DateValueObject, EmailValueObject } from '@sisques-labs/nestjs-kit';
+import {
+  DateValueObject,
+  EmailValueObject,
+  UrlValueObject,
+} from '@sisques-labs/nestjs-kit';
 import { UserAggregate } from '@contexts/users/domain/aggregates/user.aggregate';
 import { UserCreatedEvent } from '@contexts/users/domain/events/user-created/user-created.event';
 import { IUser } from '@contexts/users/domain/interfaces/user.interface';
@@ -19,6 +23,7 @@ function buildUser(overrides: Partial<IUser> = {}): IUser {
     externalId: new UserExternalIdValueObject('sub-42'),
     email: new EmailValueObject('alice@example.com'),
     displayName: new UserDisplayNameValueObject('Alice'),
+    avatarUrl: new UrlValueObject('https://example.com/avatar.png'),
     createdAt: new DateValueObject(CREATED_AT),
     updatedAt: new DateValueObject(UPDATED_AT),
     ...overrides,
@@ -35,12 +40,14 @@ describe('UserAggregate', () => {
       expect(user.externalId.value).toBe('sub-42');
       expect(user.email?.value).toBe('alice@example.com');
       expect(user.displayName.value).toBe('Alice');
+      expect(user.avatarUrl?.value).toBe('https://example.com/avatar.png');
       expect(user.toPrimitives()).toEqual({
         id: VALID_UUID,
         tenantId: VALID_TENANT_UUID,
         externalId: 'sub-42',
         email: 'alice@example.com',
         displayName: 'Alice',
+        avatarUrl: 'https://example.com/avatar.png',
         createdAt: CREATED_AT,
         updatedAt: UPDATED_AT,
       });
@@ -52,6 +59,13 @@ describe('UserAggregate', () => {
 
       expect(user.email).toBeNull();
       expect(user.toPrimitives().email).toBeNull();
+    });
+
+    it('hydrates a null avatarUrl', () => {
+      const user = new UserAggregate(buildUser({ avatarUrl: null }));
+
+      expect(user.avatarUrl).toBeNull();
+      expect(user.toPrimitives().avatarUrl).toBeNull();
     });
 
     it('rejects an invalid id', () => {
@@ -124,6 +138,36 @@ describe('UserAggregate', () => {
       user.syncEmail(null);
 
       expect(user.email).toBeNull();
+    });
+  });
+
+  describe('updateAvatarUrl', () => {
+    it('updates avatarUrl without emitting an event', () => {
+      const user = new UserAggregate(buildUser());
+
+      user.updateAvatarUrl(new UrlValueObject('https://example.com/new.png'));
+
+      expect(user.avatarUrl?.value).toBe('https://example.com/new.png');
+      expect(user.getUncommittedEvents()).toHaveLength(0);
+    });
+
+    it('accepts null, clearing a previously set avatarUrl', () => {
+      const user = new UserAggregate(buildUser());
+
+      user.updateAvatarUrl(null);
+
+      expect(user.avatarUrl).toBeNull();
+    });
+
+    it('bumps updatedAt', () => {
+      const user = new UserAggregate(buildUser());
+      const before = user.updatedAt.value;
+
+      user.updateAvatarUrl(new UrlValueObject('https://example.com/new.png'));
+
+      expect(user.updatedAt.value.getTime()).toBeGreaterThanOrEqual(
+        before.getTime(),
+      );
     });
   });
 });
