@@ -24,7 +24,7 @@ src/contexts/users/
 │   ├── exceptions/
 │   │   └── user-not-found.exception.ts   — extends BaseException
 │   ├── interfaces/
-│   │   └── user.interface.ts             — IUser (id, tenantId, externalId, email, displayName, avatarUrl — all VOs)
+│   │   └── user.interface.ts             — IUser (id, tenantId, externalId, email, displayName, avatarUrl, locale, timezone — all VOs)
 │   ├── primitives/
 │   │   └── user.primitives.ts            — extends BasePrimitives
 │   ├── repositories/
@@ -34,9 +34,12 @@ src/contexts/users/
 │   │   ├── user-id/user-id.vo.ts         — UuidValueObject subclass
 │   │   ├── user-tenant-id/user-tenant-id.vo.ts   — UuidValueObject subclass; THIS context's own reference type
 │   │   ├── user-external-id/user-external-id.vo.ts — StringValueObject subclass, non-empty
-│   │   └── user-display-name/user-display-name.vo.ts — StringValueObject subclass, non-empty, max length
-│   │       (`email`/`avatarUrl` use nestjs-kit's `EmailValueObject`/`UrlValueObject` directly — no local
-│   │       subclass needed, both are nullable fields rather than nullable VOs)
+│   │   ├── user-display-name/user-display-name.vo.ts — StringValueObject subclass, non-empty, max length
+│   │   └── user-locale/user-locale.vo.ts — StringValueObject subclass, loose language[-region] pattern;
+│   │       local subclass instead of nestjs-kit's LocaleValueObject — see decision 8 for why
+│   │       (`email`/`avatarUrl`/`timezone` use nestjs-kit's `EmailValueObject`/`UrlValueObject`/`TimezoneValueObject`
+│   │       directly — no local subclass needed, all are nullable fields rather than nullable VOs;
+│   │       `TimezoneValueObject` is constructed with `{ validateExistence: false }`, see decision 8)
 │   └── view-models/
 │       └── user.view-model.ts            — extends BaseViewModel
 ├── application/
@@ -45,8 +48,8 @@ src/contexts/users/
 │   │   │   ├── upsert-user-from-claim.command.ts   — { tenantId, externalId, email }
 │   │   │   └── upsert-user-from-claim.handler.ts   — find-or-create by (tenantId, externalId); re-syncs email; returns UserViewModel
 │   │   └── update-user-profile/
-│   │       ├── update-user-profile.command.ts — { tenantId, externalId, email, displayName, avatarUrl? }
-│   │       └── update-user-profile.handler.ts — find-or-create (same service), then always renames + conditionally updates avatarUrl; returns UserViewModel
+│   │       ├── update-user-profile.command.ts — { tenantId, externalId, email, displayName, avatarUrl?, locale?, timezone? }
+│   │       └── update-user-profile.handler.ts — find-or-create (same service), then always renames + conditionally updates avatarUrl/locale/timezone; returns UserViewModel
 │   └── services/
 │       └── write/
 │           └── find-or-create-user-by-external-id.service.ts  — shared by both handlers, mirrors find-or-create-tenant-by-external-id.service.ts
@@ -62,7 +65,7 @@ src/contexts/users/
 │       ├── users.controller.ts            — GET/PATCH /users/me, CommandBus only
 │       └── dtos/
 │           ├── user-profile-response.dto.ts
-│           └── update-user-profile.dto.ts  — { displayName: string; avatarUrl?: string | null }
+│           └── update-user-profile.dto.ts  — { displayName: string; avatarUrl?: string | null; locale?: string | null; timezone?: string | null }
 └── users.module.ts                        — controllers: [] unless IDENTITY_PROVIDER && TENANCY_ENABLED, see decision 6
 ```
 
@@ -96,7 +99,7 @@ future context needs to look up a `User` independently (not via `/me`), a
 
 3. **`avatarUrl` is a three-state `PATCH` field; `displayName` isn't.**
    `UpdateUserProfileCommand.avatarUrl` is `UrlValueObject | null |
-   undefined`: `undefined` (the request body omitted the key) leaves the
+undefined`: `undefined` (the request body omitted the key) leaves the
    stored value untouched, `null` clears it, a URL sets it. `displayName`
    doesn't need this — it's always required in the request body and
    always applied, so there's no "leave it as-is" case to represent.
@@ -115,13 +118,13 @@ future context needs to look up a `User` independently (not via `/me`), a
    this migration runs, per the dependency on `add-tenant-context`).
 
 5. **Why not a `UserGuard` (the load-bearing decision in this change).**
-   `TenantGuard` upserts `Tenant` *inside* a guard because it has a
+   `TenantGuard` upserts `Tenant` _inside_ a guard because it has a
    genuine bootstrapping problem: the tenant id doesn't exist yet, and
    `TenantContextService` (needed by any `createTenantScopedRepository()`
    -wrapped read) isn't seeded until `TenantContextInterceptor` runs —
-   which is *after* guards. `TenantGuard` sidesteps this by never scoping
+   which is _after_ guards. `TenantGuard` sidesteps this by never scoping
    `Tenant`'s own repositories this way (a `Tenant` row has no `tenant_id`
-   column — it *is* the tenant).
+   column — it _is_ the tenant).
 
    `User`, by contrast, **does** have a `tenant_id` column, and its read
    repository **is** wrapped via `createTenantScopedRepository()` — which
@@ -173,6 +176,56 @@ future context needs to look up a `User` independently (not via `/me`), a
    today — only the controller (the piece with the hard guard dependency)
    is conditional.
 
+7. **`locale`/`timezone` reuse the `avatarUrl` three-state `PATCH`
+   pattern, not a new one.** Both were added as a follow-up, the same way
+   `avatarUrl` itself was added on top of the originally-scoped
+   `displayName`-only version (see the note at the top of `tasks.md`).
+   `UpdateUserProfileCommand.locale`/`.timezone` are each
+   `<VO> | null | undefined`, exactly like `.avatarUrl` — `undefined`
+   (key omitted) leaves the stored value untouched, `null` clears it, a
+   value sets it. No new command or DTO shape was introduced; the existing
+   three-state convention from decision 3 generalizes directly to any
+   number of optional profile fields sharing one `PATCH` body.
+
+8. **Local `UserLocaleValueObject` instead of `@sisques-labs/nestjs-kit`'s
+   `LocaleValueObject`; `TimezoneValueObject` constructed with
+   `{ validateExistence: false }`.** Both were verified directly against
+   the installed kit (v1.6.1) before writing this decision, not assumed:
+   - `LocaleValueObject` lowercases its input via an internal
+     `normalizeLocale()` step _before_ checking it against a pattern that
+     requires an **uppercase** region subtag (`/^[a-z]{2}(-[A-Z]{2})?$/`).
+     The normalize-then-validate ordering means `new
+LocaleValueObject('en-US')` — or any region-qualified locale tag —
+     always throws `String does not match required pattern`, regardless
+     of the `validateExistence` option. A bare language code (`'en'`)
+     works fine; anything with a region subtag never does. Since a
+     realistic `locale` value (`en-US`, `pt-BR`, `zh-Hans-CN`, ...) is
+     exactly the shape this breaks, reusing the kit class as-is was not
+     viable. Fix: `user-locale.vo.ts` defines a local
+     `UserLocaleValueObject extends StringValueObject` with a
+     deliberately loose language[-region[-script...]] pattern
+     (non-empty, reasonable max length, no case-normalization step) —
+     the domain-layer safety net behind the stricter `@IsLocale()`
+     (class-validator, `Intl`-backed) check already enforced at the
+     transport boundary (`UpdateUserProfileDto`).
+   - `TimezoneValueObject` has no equivalent pattern bug, but defaults to
+     validating against a curated `COMMON_TIMEZONES` allowlist that
+     rejects plenty of valid IANA zones (e.g. `Africa/Cairo`) outside that
+     curated set. Passing `{ validateExistence: false }` at every
+     construction site (`UserBuilder.build()`,
+     `UpdateUserProfileCommand`'s constructor) disables that allowlist
+     check without needing a local subclass — the class itself has no
+     other issue, so a constructor option is enough; `locale`'s problem is
+     a genuine pattern bug in the kit, which an option can't fix, so it
+     needed a subclass instead.
+   - Neither issue is specific to this change's `locale`/`timezone`
+     fields — any future context in this template (or a service cloned
+     from it) constructing `LocaleValueObject` with a region-qualified
+     tag, or `TimezoneValueObject` with a non-"common" IANA zone and no
+     explicit option, will hit the same failures. Worth reporting
+     upstream to `@sisques-labs/nestjs-kit`; not fixed here since this
+     change only owns `src/contexts/users/`.
+
 ## Sequence: `GET /users/me`, first request for this user
 
 ```mermaid
@@ -196,10 +249,10 @@ sequenceDiagram
     CommandBus->>Handler: handle()
     Handler->>DB: SELECT ... WHERE tenant_id = :tenantId AND external_id = :externalId
     DB-->>Handler: not found
-    Handler->>DB: INSERT user (tenant_id, external_id, email, display_name, avatar_url=null)
+    Handler->>DB: INSERT user (tenant_id, external_id, email, display_name, avatar_url=null, locale=null, timezone=null)
     DB-->>Handler: new User row
     Handler-->>Controller: UserViewModel
-    Controller-->>Client: 200 { id, email, displayName, avatarUrl, tenantId }
+    Controller-->>Client: 200 { id, email, displayName, avatarUrl, locale, timezone, tenantId }
 ```
 
 ## Sequence: `PATCH /users/me`
@@ -214,7 +267,7 @@ sequenceDiagram
     participant Service as FindOrCreateUserByExternalIdService
     participant DB as Postgres (users table)
 
-    Controller->>CommandBus: execute(UpdateUserProfileCommand{ tenantId, externalId, email, displayName, avatarUrl })
+    Controller->>CommandBus: execute(UpdateUserProfileCommand{ tenantId, externalId, email, displayName, avatarUrl, locale, timezone })
     CommandBus->>Handler: handle()
     Handler->>Service: execute(tenantId, externalId, email)
     Service->>DB: find-or-create (same as GET path)
@@ -222,9 +275,11 @@ sequenceDiagram
     Service-->>Handler: UserAggregate
     Handler->>Handler: user.rename(newDisplayName)
     Handler->>Handler: avatarUrl !== undefined ? user.updateAvatarUrl(avatarUrl) : (no-op)
-    Handler->>DB: UPDATE users SET display_name = ..., avatar_url = ... WHERE id = ...
+    Handler->>Handler: locale !== undefined ? user.updateLocale(locale) : (no-op)
+    Handler->>Handler: timezone !== undefined ? user.updateTimezone(timezone) : (no-op)
+    Handler->>DB: UPDATE users SET display_name = ..., avatar_url = ..., locale = ..., timezone = ... WHERE id = ...
     Handler-->>Controller: UserViewModel
-    Controller-->>Client: 200 { id, email, displayName, avatarUrl, tenantId }
+    Controller-->>Client: 200 { id, email, displayName, avatarUrl, locale, timezone, tenantId }
 ```
 
 ## Alternatives considered
@@ -257,3 +312,12 @@ sequenceDiagram
   forcing every client that only wants to change `displayName` to
   first read back and re-send the current `avatarUrl` just to avoid
   accidentally clearing it.
+- **Reusing nestjs-kit's `LocaleValueObject` as-is for `locale`** —
+  rejected, see decision 8: it throws on every region-qualified locale
+  tag regardless of options, which is exactly the shape a real `locale`
+  value normally takes.
+- **Constructing `TimezoneValueObject` with its default options** —
+  rejected, see decision 8: its built-in `COMMON_TIMEZONES` allowlist
+  rejects valid IANA zones outside that curated set;
+  `{ validateExistence: false }` avoids this without needing a local
+  subclass, unlike `locale`'s genuine pattern bug.

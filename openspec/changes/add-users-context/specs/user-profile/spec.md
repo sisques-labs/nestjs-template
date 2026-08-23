@@ -141,3 +141,75 @@ supplying `null` MUST clear it, and supplying a URL string MUST set it.
 - **THEN** the newly created row's `avatarUrl` is `null` (the creation
   default — omitting the key on this first-ever call still means
   "untouched", i.e. left at its default, not derived from anything)
+
+### Requirement: Update own locale (three-state)
+
+`UpdateUserProfileCommand`'s `locale` input MUST be treated as a
+three-state field, the same contract as `avatarUrl`: omitting it from the
+command input MUST leave the `User`'s stored `locale` unchanged, supplying
+`null` MUST clear it, and supplying a locale string MUST set it.
+
+#### Scenario: locale omitted from the command
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`,
+  `locale = "en-US"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `displayName`
+  set and no `locale` key at all
+- **THEN** the row's `locale` remains `"en-US"`
+
+#### Scenario: locale set to a new value
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `locale: "es-ES"`
+- **THEN** the row's `locale` becomes `"es-ES"`
+
+#### Scenario: locale cleared with an explicit null
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`,
+  `locale = "en-US"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `locale: null`
+- **THEN** the row's `locale` becomes `null`
+
+#### Scenario: New user created via PATCH defaults locale to null
+
+- **GIVEN** no `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `displayName`
+  set and no `locale` key
+- **THEN** the newly created row's `locale` is `null`
+
+### Requirement: Update own timezone (three-state)
+
+`UpdateUserProfileCommand`'s `timezone` input MUST be treated as a
+three-state field, the same contract as `avatarUrl`: omitting it from the
+command input MUST leave the `User`'s stored `timezone` unchanged,
+supplying `null` MUST clear it, and supplying a timezone string MUST set
+it.
+
+#### Scenario: timezone omitted from the command
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`,
+  `timezone = "America/New_York"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `displayName`
+  set and no `timezone` key at all
+- **THEN** the row's `timezone` remains `"America/New_York"`
+
+#### Scenario: timezone set to a new value
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with
+  `timezone: "Europe/Madrid"`
+- **THEN** the row's `timezone` becomes `"Europe/Madrid"`
+
+#### Scenario: timezone cleared with an explicit null
+
+- **GIVEN** a `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`,
+  `timezone = "America/New_York"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `timezone: null`
+- **THEN** the row's `timezone` becomes `null`
+
+#### Scenario: New user created via PATCH defaults timezone to null
+
+- **GIVEN** no `User` row exists for `tenantId = "t-1"`, `externalId = "sub-42"`
+- **WHEN** `UpdateUserProfileCommand` is dispatched with `displayName`
+  set and no `timezone` key
+- **THEN** the newly created row's `timezone` is `null`

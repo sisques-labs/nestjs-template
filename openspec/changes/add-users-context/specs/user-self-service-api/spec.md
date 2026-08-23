@@ -47,7 +47,7 @@ endpoint.
 - **WHEN** `GET /users/me` is called
 - **THEN** the response is `200` with the newly created profile
   (`displayName` defaulted per `user-profile`'s upsert requirement,
-  `avatarUrl: null`)
+  `avatarUrl: null`, `locale: null`, `timezone: null`)
 
 #### Scenario: Subsequent request for the same principal
 
@@ -61,13 +61,13 @@ endpoint.
 - **WHEN** `GET /users/me` is called
 - **THEN** the response is `401` (`IdentityGuard`)
 
-### Requirement: PATCH /users/me updates displayName and/or avatarUrl
+### Requirement: PATCH /users/me updates displayName and/or avatarUrl/locale/timezone
 
-`PATCH /users/me` MUST accept a required `displayName` field and an
-optional `avatarUrl` field, updating only those on the caller's own
-`User` row. `email`, `externalId`, and `tenantId` MUST NOT be settable
-through this endpoint — they are derived exclusively from the verified
-token and the resolved tenant.
+`PATCH /users/me` MUST accept a required `displayName` field and optional
+`avatarUrl`/`locale`/`timezone` fields, updating only those on the
+caller's own `User` row. `email`, `externalId`, and `tenantId` MUST NOT be
+settable through this endpoint — they are derived exclusively from the
+verified token and the resolved tenant.
 
 #### Scenario: Update own display name
 
@@ -100,6 +100,52 @@ token and the resolved tenant.
 - **GIVEN** a valid bearer token
 - **WHEN** `PATCH /users/me` is called with
   `{ "displayName": "Alicia", "avatarUrl": "not-a-url" }`
+- **THEN** the response is `400`, and no write occurs
+
+#### Scenario: Set locale
+
+- **GIVEN** a valid bearer token resolving to a principal with an existing
+  `User` row
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "locale": "en-US" }`
+- **THEN** the response is `200` with `locale: "en-US"`
+
+#### Scenario: Clear locale with an explicit null
+
+- **GIVEN** a valid bearer token resolving to a principal with an existing
+  `User` row whose `locale` is currently set
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "locale": null }`
+- **THEN** the response is `200` with `locale: null`
+
+#### Scenario: Reject a non-locale-shaped locale
+
+- **GIVEN** a valid bearer token
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "locale": "!!!" }`
+- **THEN** the response is `400`, and no write occurs
+
+#### Scenario: Set timezone
+
+- **GIVEN** a valid bearer token resolving to a principal with an existing
+  `User` row
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "timezone": "Europe/Madrid" }`
+- **THEN** the response is `200` with `timezone: "Europe/Madrid"`
+
+#### Scenario: Clear timezone with an explicit null
+
+- **GIVEN** a valid bearer token resolving to a principal with an existing
+  `User` row whose `timezone` is currently set
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "timezone": null }`
+- **THEN** the response is `200` with `timezone: null`
+
+#### Scenario: Reject a non-timezone-shaped timezone
+
+- **GIVEN** a valid bearer token
+- **WHEN** `PATCH /users/me` is called with
+  `{ "displayName": "Alicia", "timezone": "not-a-timezone" }`
 - **THEN** the response is `400`, and no write occurs
 
 #### Scenario: Attempt to set email via the request body

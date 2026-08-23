@@ -24,10 +24,10 @@ persisted aggregate and a REST surface.
   `id` (internal UUID), `tenantId` (reference to the owning `Tenant`,
   scoped the same way every future tenant-owned context will be),
   `externalId` (the IdP `sub` claim), `email` (from the token, nullable —
-  `IPrincipal.email` already is), and two user-editable fields:
-  `displayName` and `avatarUrl` (both nullable/defaulted, never derived
-  from the token — there's no IdP claim for either). No locale/timezone,
-  phone, or status field in v1 — see "Out of scope".
+  `IPrincipal.email` already is), and four user-editable fields:
+  `displayName`, `avatarUrl`, `locale`, and `timezone` (all
+  nullable/defaulted, never derived from the token — there's no IdP claim
+  for any of them). No phone or status field in v1 — see "Out of scope".
 - **Lazy upsert, same pattern as `Tenant`**: no separate registration
   flow. The first authenticated, tenant-scoped request for a given
   `externalId` creates the `User` row (defaulting `displayName` to
@@ -41,12 +41,12 @@ persisted aggregate and a REST surface.
 - **REST**: `GET /users/me` (resolves-and-returns the caller's own
   profile, upserting if this is their first request) and
   `PATCH /users/me` (updates `displayName`, required and always applied,
-  and/or `avatarUrl`, optional and three-state: the key omitted leaves it
-  untouched, `null` clears it, a URL string sets it — `email`,
-  `externalId`, and `tenantId` are derived from the verified token/tenant
-  resolution and are never client-writable). Both behind
+  and/or `avatarUrl`/`locale`/`timezone`, each optional and three-state:
+  the key omitted leaves it untouched, `null` clears it, a value sets it —
+  `email`, `externalId`, and `tenantId` are derived from the verified
+  token/tenant resolution and are never client-writable). Both behind
   `IdentityGuard` + `TenantGuard` + `TenantContextInterceptor` — a caller
-  can only ever read or write their *own* profile; there is no
+  can only ever read or write their _own_ profile; there is no
   by-id lookup and no admin surface. No GraphQL or MCP surface in v1.
 - **Depends on**: `add-core-identity-module` (`IPrincipal`, `IdentityGuard`,
   `@CurrentUser()`) and `add-tenant-context` (`TenantGuard`,
@@ -76,8 +76,8 @@ persisted aggregate and a REST surface.
   wasn't for the `tenant` context (which shipped with no transport at
   all).
 - **Explicitly out of scope for this change** (tracked as follow-ups):
-  - Any field beyond `displayName`/`avatarUrl`/`email`/`externalId`/
-    `tenantId` — locale/timezone, phone, account status
+  - Any field beyond `displayName`/`avatarUrl`/`locale`/`timezone`/
+    `email`/`externalId`/`tenantId` — phone, account status
     (active/disabled/invited).
   - An admin API (list/view/disable users within a tenant) — v1 is
     self-service only (`/me`), no by-id lookup for anyone else.
