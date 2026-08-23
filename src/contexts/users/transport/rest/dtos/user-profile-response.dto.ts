@@ -21,6 +21,9 @@ export class UserProfileResponseDto {
   @ApiProperty()
   displayName!: string;
 
+  @ApiProperty({ nullable: true })
+  avatarUrl!: string | null;
+
   @ApiProperty()
   tenantId!: string;
 
@@ -35,6 +38,7 @@ export class UserProfileResponseDto {
     dto.id = viewModel.id;
     dto.email = viewModel.email;
     dto.displayName = viewModel.displayName;
+    dto.avatarUrl = viewModel.avatarUrl;
     dto.tenantId = viewModel.tenantId;
     dto.createdAt = viewModel.createdAt;
     dto.updatedAt = viewModel.updatedAt;

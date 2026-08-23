@@ -18,7 +18,7 @@ import { TenantContextService } from '@core/tenancy/application/services/tenant-
 import { TenantContextInterceptor } from '@core/tenancy/infrastructure/interceptors/tenant-context.interceptor';
 import { TenantGuard } from '@core/tenancy/infrastructure/guards/tenant.guard';
 
-import { UpdateUserDisplayNameCommand } from '@contexts/users/application/commands/update-user-display-name/update-user-display-name.command';
+import { UpdateUserProfileCommand } from '@contexts/users/application/commands/update-user-profile/update-user-profile.command';
 import { UpsertUserFromClaimCommand } from '@contexts/users/application/commands/upsert-user-from-claim/upsert-user-from-claim.command';
 import { UserViewModel } from '@contexts/users/domain/view-models/user.view-model';
 import { UpdateUserProfileDto } from '@contexts/users/transport/rest/dtos/update-user-profile.dto';
@@ -31,7 +31,7 @@ import { UserProfileResponseDto } from '@contexts/users/transport/rest/dtos/user
  * other guarded route so far exists only in test specs (see
  * `test/identity.e2e-spec.ts`'s `ProtectedTestController`).
  *
- * `UpsertUserFromClaimCommand`/`UpdateUserDisplayNameCommand` are
+ * `UpsertUserFromClaimCommand`/`UpdateUserProfileCommand` are
  * dispatched from here, not from a guard — see
  * `openspec/changes/add-users-context/design.md` decision 4 ("Why not a
  * `UserGuard`") for why: this context's repositories extend
@@ -79,7 +79,9 @@ export class UsersController {
   }
 
   @Patch('me')
-  @ApiOperation({ summary: "Update the caller's own displayName" })
+  @ApiOperation({
+    summary: "Update the caller's own displayName and/or avatarUrl",
+  })
   @ApiResponse({ status: 200, type: UserProfileResponseDto })
   async updateMe(
     @CurrentUser() principal: IPrincipal | undefined,
@@ -91,14 +93,19 @@ export class UsersController {
     );
 
     const viewModel = await this.commandBus.execute<
-      UpdateUserDisplayNameCommand,
+      UpdateUserProfileCommand,
       UserViewModel
     >(
-      new UpdateUserDisplayNameCommand({
+      new UpdateUserProfileCommand({
         tenantId: this.tenantContextService.require(),
         externalId: currentPrincipal.sub,
         email: currentPrincipal.email,
         displayName: dto.displayName,
+        // `dto.avatarUrl` is `undefined` when the request body omits the
+        // key entirely (class-transformer never sets it on the instance) —
+        // passed through as-is so the command's three-state contract
+        // (omitted/null/set) is preserved end to end.
+        avatarUrl: dto.avatarUrl,
       }),
     );
 
