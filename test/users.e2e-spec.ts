@@ -106,6 +106,8 @@ describe('Users (e2e)', () => {
         expect(res.body.email).toBe('alice@example.com');
         expect(res.body.displayName).toBe('alice');
         expect(res.body.avatarUrl).toBeNull();
+        expect(res.body.locale).toBeNull();
+        expect(res.body.timezone).toBeNull();
         expect(res.body.externalId).toBeUndefined();
 
         const rows = await dataSource.query<
@@ -305,6 +307,94 @@ describe('Users (e2e)', () => {
           .patch('/api/users/me')
           .set('Authorization', `Bearer ${VALID_TOKEN}`)
           .send({ displayName: 'Alicia', avatarUrl: 'not-a-url' });
+
+        expect(res.status).toBe(400);
+      });
+
+      it('sets locale and timezone when the request includes them', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({
+            displayName: 'Alicia',
+            locale: 'en-US',
+            timezone: 'America/New_York',
+          });
+
+        expect(res.status).toBe(200);
+        expect(res.body.locale).toBe('en-US');
+        expect(res.body.timezone).toBe('America/New_York');
+      });
+
+      it('leaves locale and timezone untouched when the request omits those keys', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+        await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({
+            displayName: 'Alicia',
+            locale: 'en-US',
+            timezone: 'America/New_York',
+          });
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({ displayName: 'Alicia again' });
+
+        expect(res.status).toBe(200);
+        expect(res.body.locale).toBe('en-US');
+        expect(res.body.timezone).toBe('America/New_York');
+      });
+
+      it('clears locale and timezone when the request sends them as null', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+        await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({
+            displayName: 'Alicia',
+            locale: 'en-US',
+            timezone: 'America/New_York',
+          });
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({ displayName: 'Alicia', locale: null, timezone: null });
+
+        expect(res.status).toBe(200);
+        expect(res.body.locale).toBeNull();
+        expect(res.body.timezone).toBeNull();
+      });
+
+      it('rejects a non-locale-shaped locale with 400', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({ displayName: 'Alicia', locale: '!!!' });
+
+        expect(res.status).toBe(400);
+      });
+
+      it('rejects an invalid timezone with 400', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({ displayName: 'Alicia', timezone: 'not-a-timezone' });
 
         expect(res.status).toBe(400);
       });
