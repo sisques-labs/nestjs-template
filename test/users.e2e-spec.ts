@@ -105,6 +105,7 @@ describe('Users (e2e)', () => {
         expect(res.status).toBe(200);
         expect(res.body.email).toBe('alice@example.com');
         expect(res.body.displayName).toBe('alice');
+        expect(res.body.avatarUrl).toBeNull();
         expect(res.body.externalId).toBeUndefined();
 
         const rows = await dataSource.query<
@@ -236,6 +237,76 @@ describe('Users (e2e)', () => {
           ['sub-1'],
         );
         expect(rows[0].count).toBe('0');
+      });
+
+      it('sets avatarUrl when the request includes it', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({
+            displayName: 'Alicia',
+            avatarUrl: 'https://example.com/avatar.png',
+          });
+
+        expect(res.status).toBe(200);
+        expect(res.body.avatarUrl).toBe('https://example.com/avatar.png');
+      });
+
+      it('leaves avatarUrl untouched when the request omits the key', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+        await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({
+            displayName: 'Alicia',
+            avatarUrl: 'https://example.com/avatar.png',
+          });
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({ displayName: 'Alicia again' });
+
+        expect(res.status).toBe(200);
+        expect(res.body.avatarUrl).toBe('https://example.com/avatar.png');
+      });
+
+      it('clears avatarUrl when the request sends it as null', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+        await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({
+            displayName: 'Alicia',
+            avatarUrl: 'https://example.com/avatar.png',
+          });
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({ displayName: 'Alicia', avatarUrl: null });
+
+        expect(res.status).toBe(200);
+        expect(res.body.avatarUrl).toBeNull();
+      });
+
+      it('rejects a non-URL avatarUrl with 400', async () => {
+        identityProvider.verifyToken.mockResolvedValue(principal());
+
+        const res = await ctx
+          .http()
+          .patch('/api/users/me')
+          .set('Authorization', `Bearer ${VALID_TOKEN}`)
+          .send({ displayName: 'Alicia', avatarUrl: 'not-a-url' });
+
+        expect(res.status).toBe(400);
       });
     });
   });
