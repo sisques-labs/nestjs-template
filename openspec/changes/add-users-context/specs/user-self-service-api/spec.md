@@ -80,10 +80,11 @@ exclusively from the verified token and the resolved tenant.
 - **GIVEN** a valid bearer token
 - **WHEN** `PATCH /users/me` is called with
   `{ "displayName": "Alicia", "email": "attacker@example.com" }`
-- **THEN** the response is `200` with `displayName: "Alicia"`
-- **AND** the stored `email` remains whatever the verified token carries —
-  the extra `email` field in the request body MUST be ignored (rejected by
-  DTO validation, not silently accepted), never applied
+- **THEN** the response is `400` — the app's global `ValidationPipe`
+  (`whitelist: true, forbidNonWhitelisted: true`, see `main.ts`) rejects
+  any request body property not declared on `UpdateUserProfileDto` before
+  the request reaches the controller
+- **AND** no write occurs and the stored `email` is unaffected
 
 #### Scenario: Blank display name
 
