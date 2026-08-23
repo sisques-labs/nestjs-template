@@ -1,6 +1,7 @@
 import {
   BaseAggregate,
   EmailValueObject,
+  TimezoneValueObject,
   UrlValueObject,
 } from '@sisques-labs/nestjs-kit';
 import { UserCreatedEvent } from '@contexts/users/domain/events/user-created/user-created.event';
@@ -9,16 +10,18 @@ import { UserPrimitives } from '@contexts/users/domain/primitives/user.primitive
 import { UserDisplayNameValueObject } from '@contexts/users/domain/value-objects/user-display-name/user-display-name.vo';
 import { UserExternalIdValueObject } from '@contexts/users/domain/value-objects/user-external-id/user-external-id.vo';
 import { UserIdValueObject } from '@contexts/users/domain/value-objects/user-id/user-id.vo';
+import { UserLocaleValueObject } from '@contexts/users/domain/value-objects/user-locale/user-locale.vo';
 import { UserTenantIdValueObject } from '@contexts/users/domain/value-objects/user-tenant-id/user-tenant-id.vo';
 
 /**
  * `User` — this template's second bounded-context aggregate. A tenant-scoped
  * profile lazily created from the verified principal, the same way `Tenant`
  * is (see `openspec/changes/add-users-context/`). `email` is IdP-derived
- * and re-synced on every upsert via `syncEmail()`; `displayName` and
- * `avatarUrl` are the fields a caller can change, via `rename()`/
- * `updateAvatarUrl()` — both start `null`/defaulted, there is no IdP claim
- * for either.
+ * and re-synced on every upsert via `syncEmail()`; `displayName`,
+ * `avatarUrl`, `locale`, and `timezone` are the fields a caller can change,
+ * via `rename()`/`updateAvatarUrl()`/`updateLocale()`/`updateTimezone()` —
+ * all but `displayName` start `null`, there is no IdP claim for any of
+ * them.
  */
 export class UserAggregate extends BaseAggregate {
   private readonly _id: UserIdValueObject;
@@ -27,6 +30,8 @@ export class UserAggregate extends BaseAggregate {
   private _email: EmailValueObject | null;
   private _displayName: UserDisplayNameValueObject;
   private _avatarUrl: UrlValueObject | null;
+  private _locale: UserLocaleValueObject | null;
+  private _timezone: TimezoneValueObject | null;
 
   /**
    * Hydration only — never emits domain events. Takes an already-VO-wrapped
@@ -43,6 +48,8 @@ export class UserAggregate extends BaseAggregate {
     this._email = user.email;
     this._displayName = user.displayName;
     this._avatarUrl = user.avatarUrl;
+    this._locale = user.locale;
+    this._timezone = user.timezone;
   }
 
   get id(): UserIdValueObject {
@@ -67,6 +74,14 @@ export class UserAggregate extends BaseAggregate {
 
   get avatarUrl(): UrlValueObject | null {
     return this._avatarUrl;
+  }
+
+  get locale(): UserLocaleValueObject | null {
+    return this._locale;
+  }
+
+  get timezone(): TimezoneValueObject | null {
+    return this._timezone;
   }
 
   /**
@@ -111,6 +126,20 @@ export class UserAggregate extends BaseAggregate {
     this.touch();
   }
 
+  /** Updates the user-owned `locale`. `null` clears it. Does not emit an
+   * event — see the class doc comment. */
+  updateLocale(locale: UserLocaleValueObject | null): void {
+    this._locale = locale;
+    this.touch();
+  }
+
+  /** Updates the user-owned `timezone`. `null` clears it. Does not emit
+   * an event — see the class doc comment. */
+  updateTimezone(timezone: TimezoneValueObject | null): void {
+    this._timezone = timezone;
+    this.touch();
+  }
+
   toPrimitives(): UserPrimitives {
     return {
       id: this._id.value,
@@ -119,6 +148,8 @@ export class UserAggregate extends BaseAggregate {
       email: this._email?.value ?? null,
       displayName: this._displayName.value,
       avatarUrl: this._avatarUrl?.value ?? null,
+      locale: this._locale?.value ?? null,
+      timezone: this._timezone?.value ?? null,
       createdAt: this.createdAt.value,
       updatedAt: this.updatedAt.value,
     };

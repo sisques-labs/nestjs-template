@@ -1,6 +1,7 @@
 import {
   DateValueObject,
   EmailValueObject,
+  TimezoneValueObject,
   UrlValueObject,
 } from '@sisques-labs/nestjs-kit';
 import { UserAggregate } from '@contexts/users/domain/aggregates/user.aggregate';
@@ -9,6 +10,7 @@ import { IUser } from '@contexts/users/domain/interfaces/user.interface';
 import { UserDisplayNameValueObject } from '@contexts/users/domain/value-objects/user-display-name/user-display-name.vo';
 import { UserExternalIdValueObject } from '@contexts/users/domain/value-objects/user-external-id/user-external-id.vo';
 import { UserIdValueObject } from '@contexts/users/domain/value-objects/user-id/user-id.vo';
+import { UserLocaleValueObject } from '@contexts/users/domain/value-objects/user-locale/user-locale.vo';
 import { UserTenantIdValueObject } from '@contexts/users/domain/value-objects/user-tenant-id/user-tenant-id.vo';
 
 const VALID_UUID = '5f8d0d55-1c3a-4b7e-9a2f-3b6d1e0c9a11';
@@ -24,6 +26,10 @@ function buildUser(overrides: Partial<IUser> = {}): IUser {
     email: new EmailValueObject('alice@example.com'),
     displayName: new UserDisplayNameValueObject('Alice'),
     avatarUrl: new UrlValueObject('https://example.com/avatar.png'),
+    locale: new UserLocaleValueObject('en-US'),
+    timezone: new TimezoneValueObject('America/New_York', {
+      validateExistence: false,
+    }),
     createdAt: new DateValueObject(CREATED_AT),
     updatedAt: new DateValueObject(UPDATED_AT),
     ...overrides,
@@ -41,6 +47,8 @@ describe('UserAggregate', () => {
       expect(user.email?.value).toBe('alice@example.com');
       expect(user.displayName.value).toBe('Alice');
       expect(user.avatarUrl?.value).toBe('https://example.com/avatar.png');
+      expect(user.locale?.value).toBe('en-US');
+      expect(user.timezone?.value).toBe('America/New_York');
       expect(user.toPrimitives()).toEqual({
         id: VALID_UUID,
         tenantId: VALID_TENANT_UUID,
@@ -48,6 +56,8 @@ describe('UserAggregate', () => {
         email: 'alice@example.com',
         displayName: 'Alice',
         avatarUrl: 'https://example.com/avatar.png',
+        locale: 'en-US',
+        timezone: 'America/New_York',
         createdAt: CREATED_AT,
         updatedAt: UPDATED_AT,
       });
@@ -66,6 +76,20 @@ describe('UserAggregate', () => {
 
       expect(user.avatarUrl).toBeNull();
       expect(user.toPrimitives().avatarUrl).toBeNull();
+    });
+
+    it('hydrates a null locale', () => {
+      const user = new UserAggregate(buildUser({ locale: null }));
+
+      expect(user.locale).toBeNull();
+      expect(user.toPrimitives().locale).toBeNull();
+    });
+
+    it('hydrates a null timezone', () => {
+      const user = new UserAggregate(buildUser({ timezone: null }));
+
+      expect(user.timezone).toBeNull();
+      expect(user.toPrimitives().timezone).toBeNull();
     });
 
     it('rejects an invalid id', () => {
@@ -164,6 +188,70 @@ describe('UserAggregate', () => {
       const before = user.updatedAt.value;
 
       user.updateAvatarUrl(new UrlValueObject('https://example.com/new.png'));
+
+      expect(user.updatedAt.value.getTime()).toBeGreaterThanOrEqual(
+        before.getTime(),
+      );
+    });
+  });
+
+  describe('updateLocale', () => {
+    it('updates locale without emitting an event', () => {
+      const user = new UserAggregate(buildUser());
+
+      user.updateLocale(new UserLocaleValueObject('es-ES'));
+
+      expect(user.locale?.value).toBe('es-ES');
+      expect(user.getUncommittedEvents()).toHaveLength(0);
+    });
+
+    it('accepts null, clearing a previously set locale', () => {
+      const user = new UserAggregate(buildUser());
+
+      user.updateLocale(null);
+
+      expect(user.locale).toBeNull();
+    });
+
+    it('bumps updatedAt', () => {
+      const user = new UserAggregate(buildUser());
+      const before = user.updatedAt.value;
+
+      user.updateLocale(new UserLocaleValueObject('es-ES'));
+
+      expect(user.updatedAt.value.getTime()).toBeGreaterThanOrEqual(
+        before.getTime(),
+      );
+    });
+  });
+
+  describe('updateTimezone', () => {
+    it('updates timezone without emitting an event', () => {
+      const user = new UserAggregate(buildUser());
+
+      user.updateTimezone(
+        new TimezoneValueObject('Europe/Madrid', { validateExistence: false }),
+      );
+
+      expect(user.timezone?.value).toBe('Europe/Madrid');
+      expect(user.getUncommittedEvents()).toHaveLength(0);
+    });
+
+    it('accepts null, clearing a previously set timezone', () => {
+      const user = new UserAggregate(buildUser());
+
+      user.updateTimezone(null);
+
+      expect(user.timezone).toBeNull();
+    });
+
+    it('bumps updatedAt', () => {
+      const user = new UserAggregate(buildUser());
+      const before = user.updatedAt.value;
+
+      user.updateTimezone(
+        new TimezoneValueObject('Europe/Madrid', { validateExistence: false }),
+      );
 
       expect(user.updatedAt.value.getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
