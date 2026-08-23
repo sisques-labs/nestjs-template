@@ -4,6 +4,7 @@ import {
   DateValueObject,
   EmailValueObject,
   FieldIsRequiredException,
+  UrlValueObject,
 } from '@sisques-labs/nestjs-kit';
 import { UserAggregate } from '@contexts/users/domain/aggregates/user.aggregate';
 import { UserDisplayNameValueObject } from '@contexts/users/domain/value-objects/user-display-name/user-display-name.vo';
@@ -25,6 +26,7 @@ export class UserBuilder extends BaseBuilder<UserAggregate, UserViewModel> {
   private _externalId!: string;
   private _email: string | null = null;
   private _displayName!: string;
+  private _avatarUrl: string | null = null;
 
   withTenantId(tenantId: string): this {
     this._tenantId = tenantId;
@@ -43,6 +45,11 @@ export class UserBuilder extends BaseBuilder<UserAggregate, UserViewModel> {
 
   withDisplayName(displayName: string): this {
     this._displayName = displayName;
+    return this;
+  }
+
+  withAvatarUrl(avatarUrl: string | null): this {
+    this._avatarUrl = avatarUrl;
     return this;
   }
 
@@ -67,6 +74,7 @@ export class UserBuilder extends BaseBuilder<UserAggregate, UserViewModel> {
       externalId: new UserExternalIdValueObject(this._externalId),
       email: this._email ? new EmailValueObject(this._email) : null,
       displayName: new UserDisplayNameValueObject(this._displayName),
+      avatarUrl: this._avatarUrl ? new UrlValueObject(this._avatarUrl) : null,
       createdAt: new DateValueObject(this._createdAt),
       updatedAt: new DateValueObject(this._updatedAt),
     });
@@ -80,6 +88,7 @@ export class UserBuilder extends BaseBuilder<UserAggregate, UserViewModel> {
       externalId: this._externalId,
       email: this._email,
       displayName: this._displayName,
+      avatarUrl: this._avatarUrl,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     });

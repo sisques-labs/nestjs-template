@@ -103,6 +103,7 @@ describe('FindOrCreateUserByExternalIdService', () => {
     expect(result.tenantId.value).toBe(TENANT_ID);
     expect(result.externalId.value).toBe('sub-99');
     expect(result.displayName.value).toBe('bob');
+    expect(result.avatarUrl).toBeNull();
     expect(result.getUncommittedEvents()).toHaveLength(1);
   });
 

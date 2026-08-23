@@ -1,4 +1,8 @@
-import { BaseAggregate, EmailValueObject } from '@sisques-labs/nestjs-kit';
+import {
+  BaseAggregate,
+  EmailValueObject,
+  UrlValueObject,
+} from '@sisques-labs/nestjs-kit';
 import { UserCreatedEvent } from '@contexts/users/domain/events/user-created/user-created.event';
 import { IUser } from '@contexts/users/domain/interfaces/user.interface';
 import { UserPrimitives } from '@contexts/users/domain/primitives/user.primitives';
@@ -11,8 +15,10 @@ import { UserTenantIdValueObject } from '@contexts/users/domain/value-objects/us
  * `User` — this template's second bounded-context aggregate. A tenant-scoped
  * profile lazily created from the verified principal, the same way `Tenant`
  * is (see `openspec/changes/add-users-context/`). `email` is IdP-derived
- * and re-synced on every upsert via `syncEmail()`; `displayName` is the
- * only field a caller can change, via `rename()`.
+ * and re-synced on every upsert via `syncEmail()`; `displayName` and
+ * `avatarUrl` are the fields a caller can change, via `rename()`/
+ * `updateAvatarUrl()` — both start `null`/defaulted, there is no IdP claim
+ * for either.
  */
 export class UserAggregate extends BaseAggregate {
   private readonly _id: UserIdValueObject;
@@ -20,6 +26,7 @@ export class UserAggregate extends BaseAggregate {
   private readonly _externalId: UserExternalIdValueObject;
   private _email: EmailValueObject | null;
   private _displayName: UserDisplayNameValueObject;
+  private _avatarUrl: UrlValueObject | null;
 
   /**
    * Hydration only — never emits domain events. Takes an already-VO-wrapped
@@ -35,6 +42,7 @@ export class UserAggregate extends BaseAggregate {
     this._externalId = user.externalId;
     this._email = user.email;
     this._displayName = user.displayName;
+    this._avatarUrl = user.avatarUrl;
   }
 
   get id(): UserIdValueObject {
@@ -55,6 +63,10 @@ export class UserAggregate extends BaseAggregate {
 
   get displayName(): UserDisplayNameValueObject {
     return this._displayName;
+  }
+
+  get avatarUrl(): UrlValueObject | null {
+    return this._avatarUrl;
   }
 
   /**
@@ -92,6 +104,13 @@ export class UserAggregate extends BaseAggregate {
     this.touch();
   }
 
+  /** Updates the user-owned `avatarUrl`. `null` clears it. Does not emit
+   * an event — see the class doc comment. */
+  updateAvatarUrl(avatarUrl: UrlValueObject | null): void {
+    this._avatarUrl = avatarUrl;
+    this.touch();
+  }
+
   toPrimitives(): UserPrimitives {
     return {
       id: this._id.value,
@@ -99,6 +118,7 @@ export class UserAggregate extends BaseAggregate {
       externalId: this._externalId.value,
       email: this._email?.value ?? null,
       displayName: this._displayName.value,
+      avatarUrl: this._avatarUrl?.value ?? null,
       createdAt: this.createdAt.value,
       updatedAt: this.updatedAt.value,
     };

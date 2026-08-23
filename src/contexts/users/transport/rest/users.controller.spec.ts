@@ -31,7 +31,7 @@ function buildTenantContextServiceMock(): jest.Mocked<TenantContextService> {
 }
 
 function buildViewModel(
-  overrides: Partial<{ displayName: string }> = {},
+  overrides: Partial<{ displayName: string; avatarUrl: string | null }> = {},
 ): UserViewModel {
   return new UserViewModel({
     id: '5f8d0d55-1c3a-4b7e-9a2f-3b6d1e0c9a11',
@@ -39,6 +39,7 @@ function buildViewModel(
     externalId: 'sub-42',
     email: 'alice@example.com',
     displayName: overrides.displayName ?? 'Alice',
+    avatarUrl: overrides.avatarUrl ?? null,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),
   });
@@ -74,6 +75,7 @@ describe('UsersController', () => {
         id: '5f8d0d55-1c3a-4b7e-9a2f-3b6d1e0c9a11',
         email: 'alice@example.com',
         displayName: 'Alice',
+        avatarUrl: null,
         tenantId: TENANT_ID,
         createdAt: new Date('2026-01-01T00:00:00.000Z'),
         updatedAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -89,7 +91,7 @@ describe('UsersController', () => {
   });
 
   describe('updateMe', () => {
-    it('dispatches UpdateUserDisplayNameCommand with the requested displayName, returning the mapped profile', async () => {
+    it('dispatches UpdateUserProfileCommand with the requested displayName, returning the mapped profile', async () => {
       commandBus.execute.mockResolvedValue(
         buildViewModel({ displayName: 'Alicia' }),
       );
@@ -102,10 +104,42 @@ describe('UsersController', () => {
       const command = commandBus.execute.mock.calls[0][0] as {
         tenantId: { value: string };
         displayName: { value: string };
+        avatarUrl: { value: string } | null | undefined;
       };
       expect(command.tenantId.value).toBe(TENANT_ID);
       expect(command.displayName.value).toBe('Alicia');
+      expect(command.avatarUrl).toBeUndefined();
       expect(result.displayName).toBe('Alicia');
+    });
+
+    it('passes avatarUrl through when the request body includes it', async () => {
+      commandBus.execute.mockResolvedValue(
+        buildViewModel({ avatarUrl: 'https://example.com/new.png' }),
+      );
+
+      await controller.updateMe(PRINCIPAL, {
+        displayName: 'Alicia',
+        avatarUrl: 'https://example.com/new.png',
+      });
+
+      const command = commandBus.execute.mock.calls[0][0] as {
+        avatarUrl: { value: string } | null | undefined;
+      };
+      expect(command.avatarUrl?.value).toBe('https://example.com/new.png');
+    });
+
+    it('passes a null avatarUrl through as a clear request, not "omitted"', async () => {
+      commandBus.execute.mockResolvedValue(buildViewModel());
+
+      await controller.updateMe(PRINCIPAL, {
+        displayName: 'Alicia',
+        avatarUrl: null,
+      });
+
+      const command = commandBus.execute.mock.calls[0][0] as {
+        avatarUrl: { value: string } | null | undefined;
+      };
+      expect(command.avatarUrl).toBeNull();
     });
 
     it('throws UnauthorizedException when no principal is attached', async () => {
