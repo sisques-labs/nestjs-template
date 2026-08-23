@@ -3,7 +3,7 @@ import { UserPrimitives } from '@contexts/users/domain/primitives/user.primitive
 
 /**
  * Read-side projection of a `User`, returned by `IUserReadRepository` and
- * by the `upsert`/`update-display-name` command handlers (see
+ * by the `upsert`/`update-profile` command handlers (see
  * `openspec/changes/add-users-context/design.md` — both `/users/me` verbs
  * need the current profile, not just an id). Constructed from a single
  * `UserPrimitives` params object, the established serialized shape for
@@ -15,6 +15,8 @@ export class UserViewModel extends BaseViewModel {
   private readonly _email: string | null;
   private readonly _displayName: string;
   private readonly _avatarUrl: string | null;
+  private readonly _locale: string | null;
+  private readonly _timezone: string | null;
 
   constructor(primitives: UserPrimitives) {
     super(primitives.id, primitives.createdAt, primitives.updatedAt);
@@ -23,6 +25,8 @@ export class UserViewModel extends BaseViewModel {
     this._email = primitives.email;
     this._displayName = primitives.displayName;
     this._avatarUrl = primitives.avatarUrl;
+    this._locale = primitives.locale;
+    this._timezone = primitives.timezone;
   }
 
   get tenantId(): string {
@@ -43,5 +47,13 @@ export class UserViewModel extends BaseViewModel {
 
   get avatarUrl(): string | null {
     return this._avatarUrl;
+  }
+
+  get locale(): string | null {
+    return this._locale;
+  }
+
+  get timezone(): string | null {
+    return this._timezone;
   }
 }

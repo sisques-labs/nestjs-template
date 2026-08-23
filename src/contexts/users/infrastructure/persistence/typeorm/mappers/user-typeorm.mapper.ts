@@ -31,6 +31,8 @@ export class UserTypeOrmMapper extends BaseDatabaseMapper<
       .withEmail(entity.email)
       .withDisplayName(entity.displayName)
       .withAvatarUrl(entity.avatarUrl)
+      .withLocale(entity.locale)
+      .withTimezone(entity.timezone)
       .withCreatedAt(entity.createdAt)
       .withUpdatedAt(entity.updatedAt)
       .build();
@@ -46,6 +48,8 @@ export class UserTypeOrmMapper extends BaseDatabaseMapper<
     entity.email = primitives.email;
     entity.displayName = primitives.displayName;
     entity.avatarUrl = primitives.avatarUrl;
+    entity.locale = primitives.locale;
+    entity.timezone = primitives.timezone;
     entity.createdAt = primitives.createdAt;
     entity.updatedAt = primitives.updatedAt;
     return entity;
@@ -60,6 +64,8 @@ export class UserTypeOrmMapper extends BaseDatabaseMapper<
       .withEmail(entity.email)
       .withDisplayName(entity.displayName)
       .withAvatarUrl(entity.avatarUrl)
+      .withLocale(entity.locale)
+      .withTimezone(entity.timezone)
       .withCreatedAt(entity.createdAt)
       .withUpdatedAt(entity.updatedAt)
       .buildViewModel();
