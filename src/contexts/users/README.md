@@ -21,18 +21,33 @@ and design rationale.
   having created the row first.
 
 Both commands return a `UserViewModel`, not just an id — unusual for a
-command handler in this codebase, but the self-service `/users/me` REST
-surface (added in a later layer) needs the full current profile for its
-response, not a separate read after every write.
+command handler in this codebase, but both `/users/me` REST verbs need the
+full current profile for their response, not a separate read after every
+write.
 
 No `application/queries/` — see `design.md`'s "Split rationale" for why
 find-or-create is a write-side concern here, the same reasoning
 `add-tenant-context`'s design used for `Tenant`'s own upsert.
 
-No `transport/` subtree yet — added in a later layer as
-`GET /users/me` / `PATCH /users/me`, gated behind
-`IDENTITY_PROVIDER && TENANCY_ENABLED` (see "Persistence" below and
-`design.md` decision 5).
+- **`GET /users/me`** — resolves-and-returns the caller's own profile,
+  upserting it on first request.
+- **`PATCH /users/me`** — updates `displayName` only; `email`/`externalId`/
+  `tenantId` are derived exclusively from the verified token and resolved
+  tenant, never client-writable.
+
+Both behind `IdentityGuard` + `TenantGuard` + `TenantContextInterceptor`.
+`UsersController` is registered only when both `IDENTITY_PROVIDER` and
+`TENANCY_ENABLED` are set (`USERS_REST_ENABLED` in `users.module.ts`) —
+see "Persistence" below and `design.md` decision 5 for why this context's
+controller needs that gate in a way `TenantModule` never did. No by-id
+lookup and no admin surface — a caller can only ever act on their own
+profile. No GraphQL or MCP surface in v1.
+
+`UpsertUserFromClaimCommand`/`UpdateUserDisplayNameCommand` are dispatched
+from `UsersController`'s route handlers, not from a guard — see
+`design.md` decision 4 ("Why not a `UserGuard`") for the reasoning
+(`TenantScopedRepository` needs `TenantContextService` seeded, which is
+only true once `TenantContextInterceptor` has already run).
 
 ## Structure
 
@@ -62,6 +77,10 @@ users/
 │       ├── entities/user.entity.ts              — `users` table (unique index on (tenant_id, external_id), FK to tenants)
 │       ├── mappers/user-typeorm.mapper.ts        — entity ↔ UserAggregate/UserViewModel
 │       └── repositories/                         — TypeORM read/write repository implementations
+├── transport/
+│   └── rest/
+│       ├── users.controller.ts                   — GET/PATCH /users/me, CommandBus only
+│       └── dtos/                                 — UpdateUserProfileDto, UserProfileResponseDto
 └── users.module.ts
 ```
 

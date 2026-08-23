@@ -12,6 +12,7 @@ import { UserEntity } from '@contexts/users/infrastructure/persistence/typeorm/e
 import { UserTypeOrmMapper } from '@contexts/users/infrastructure/persistence/typeorm/mappers/user-typeorm.mapper';
 import { UserTypeOrmReadRepository } from '@contexts/users/infrastructure/persistence/typeorm/repositories/user-typeorm-read.repository';
 import { UserTypeOrmWriteRepository } from '@contexts/users/infrastructure/persistence/typeorm/repositories/user-typeorm-write.repository';
+import { UsersController } from '@contexts/users/transport/rest/users.controller';
 
 const COMMAND_HANDLERS = [
   UpsertUserFromClaimHandler,
@@ -26,18 +27,28 @@ const INFRASTRUCTURE_REPOSITORIES = [
 const INFRASTRUCTURE_MAPPERS = [UserTypeOrmMapper];
 const INFRASTRUCTURE_ENTITIES = [UserEntity];
 
+// `UsersController` depends on `IdentityGuard`/`TenantGuard`, which Nest
+// resolves at module-graph-build time regardless of whether a route is
+// ever called — those guards' own dependencies (IIdentityProvider,
+// CommandBus) are only provided when IdentityModule/TenancyModule are
+// themselves imported into CoreModule (see core.module.ts), which only
+// happens when these same two flags are set. Registering the controller
+// unconditionally would break boot for any service with neither flag set,
+// even one that never asked for identity, tenancy, or users — see
+// openspec/changes/add-users-context/design.md decision 5.
+const USERS_REST_ENABLED =
+  Boolean(process.env.IDENTITY_PROVIDER) &&
+  process.env.TENANCY_ENABLED === 'true';
+
 /**
- * This template's second bounded context. No `controllers` yet — the
- * `/users/me` REST surface is added in a later layer, gated behind
- * `IDENTITY_PROVIDER && TENANCY_ENABLED` (see
- * `openspec/changes/add-users-context/design.md` decision 5): unlike
- * `TenantModule`, this context's controller will depend on `IdentityGuard`/
- * `TenantGuard`, so registering it unconditionally would break app boot for
- * any service with neither flag set. The providers below have no such
- * dependency and register unconditionally, same as `TenantModule` today.
+ * This template's second bounded context. Its domain/application/
+ * infrastructure providers register unconditionally — harmless, mirrors
+ * `TenantModule` — but `UsersController` (the piece with the hard guard
+ * dependency) is opt-in, see `USERS_REST_ENABLED` above.
  */
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([...INFRASTRUCTURE_ENTITIES])],
+  controllers: USERS_REST_ENABLED ? [UsersController] : [],
   providers: [
     ...COMMAND_HANDLERS,
     ...APPLICATION_SERVICES,
