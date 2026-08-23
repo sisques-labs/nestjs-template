@@ -14,4 +14,5 @@
  */
 export const AGGREGATE_MODULE_MAP: Readonly<Record<string, string>> = {
   TenantAggregate: 'tenant',
+  UserAggregate: 'users',
 };
