@@ -38,6 +38,8 @@ function buildExistingUser() {
     .withEmail('alice@example.com')
     .withDisplayName('Alice')
     .withAvatarUrl('https://example.com/old.png')
+    .withLocale('en-US')
+    .withTimezone('America/New_York')
     .withCreatedAt(new Date('2026-01-01T00:00:00.000Z'))
     .withUpdatedAt(new Date('2026-01-01T00:00:00.000Z'))
     .build();
@@ -125,6 +127,58 @@ describe('UpdateUserProfileHandler', () => {
     const result = await handler.execute(command);
 
     expect(result.avatarUrl).toBeNull();
+  });
+
+  it('leaves locale and timezone untouched when the command omits those keys entirely', async () => {
+    const existing = buildExistingUser();
+    findOrCreateUserByExternalIdService.execute.mockResolvedValue(existing);
+
+    const command = new UpdateUserProfileCommand({
+      tenantId: TENANT_ID,
+      externalId: 'sub-42',
+      email: 'alice@example.com',
+      displayName: 'Alicia',
+    });
+    const result = await handler.execute(command);
+
+    expect(result.locale).toBe('en-US');
+    expect(result.timezone).toBe('America/New_York');
+  });
+
+  it('sets locale and timezone when the command provides them', async () => {
+    const existing = buildExistingUser();
+    findOrCreateUserByExternalIdService.execute.mockResolvedValue(existing);
+
+    const command = new UpdateUserProfileCommand({
+      tenantId: TENANT_ID,
+      externalId: 'sub-42',
+      email: 'alice@example.com',
+      displayName: 'Alicia',
+      locale: 'es-ES',
+      timezone: 'Europe/Madrid',
+    });
+    const result = await handler.execute(command);
+
+    expect(result.locale).toBe('es-ES');
+    expect(result.timezone).toBe('Europe/Madrid');
+  });
+
+  it('clears locale and timezone when the command provides null for both', async () => {
+    const existing = buildExistingUser();
+    findOrCreateUserByExternalIdService.execute.mockResolvedValue(existing);
+
+    const command = new UpdateUserProfileCommand({
+      tenantId: TENANT_ID,
+      externalId: 'sub-42',
+      email: 'alice@example.com',
+      displayName: 'Alicia',
+      locale: null,
+      timezone: null,
+    });
+    const result = await handler.execute(command);
+
+    expect(result.locale).toBeNull();
+    expect(result.timezone).toBeNull();
   });
 
   it('creates the user on first PATCH, publishes its creation event, then applies the requested displayName (not the default)', async () => {
