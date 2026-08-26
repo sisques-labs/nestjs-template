@@ -1,6 +1,6 @@
 {
   "name": "sisqueslabs/nestjs-template",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Sisques Labs NestJS service template — DDD+CQRS+Hexagonal, TypeORM/Postgres, Kafka, GraphQL+REST, OpenTelemetry, MCP.",
   "author": "Sisques Labs",
   "repository": {
