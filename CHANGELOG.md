@@ -1,6 +1,26 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.2.2] - 2026-08-19
+
+### Bug Fixes
+- **deps:** Pin dependency @nestjs/apollo to 12.2.2 (b812183)
+- **deps:** Pin dependency @modelcontextprotocol/sdk to 1.30.0 (27f1182)
+
+### Chore
+- **deps:** Pin dependency eslint-plugin-prettier to 5.5.6 (#170) (94de4f3)
+- **deps:** Pin dependency husky to 9.1.7 (#171) (71374a0)
+- **deps:** Pin dependency jest to 30.4.2 (4b50ba2)
+- **deps:** Pin dependency lint-staged to 17.3.0 (30f2d7a)
+- **deps:** Pin dependency ts-jest to 29.4.12 (5254ca6)
+- **deps:** Pin dependency prettier to 3.9.6 (#174) (384fe11)
+- **deps:** Pin dependency source-map-support to 0.5.21 (12097cc)
+- **deps:** Pin dependency supertest to 7.2.2 (abffc0e)
+- **deps:** Pin dependency ts-loader to 9.6.2 (4c32ed1)
+- **deps:** Pin dependency ts-node to 10.9.2 (19c7b26)
+- **deps:** Pin dependency tsconfig-paths to 4.2.0 (#182) (e97d70c)
+- **deps:** Pin dependency typescript to 6.0.3 (#183) (c8050a9)
+- **deps:** Pin node.js to v24.19.0 (#184) (2d57e08)
 ## [0.2.1] - 2026-08-10
 
 ### Chore

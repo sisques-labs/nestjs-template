@@ -1,6 +1,6 @@
 {
   "name": "sisqueslabs/nestjs-template",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Sisques Labs NestJS service template — DDD+CQRS+Hexagonal, TypeORM/Postgres, Kafka, GraphQL+REST, OpenTelemetry, MCP.",
   "author": "Sisques Labs",
   "repository": {
@@ -11,6 +11,13 @@
   "private": true,
   "license": "UNLICENSED",
   "packageManager": "pnpm@11.21.0",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": ">=11",
+      "onFail": "ignore"
+    }
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -45,16 +52,16 @@
     "@apollo/server": "^4.13.0",
     "@modelcontextprotocol/sdk": "1.30.0",
     "@nestjs/apollo": "12.2.2",
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/config": "^4.0.4",
-    "@nestjs/core": "^11.0.0",
-    "@nestjs/cqrs": "^11.0.3",
-    "@nestjs/graphql": "^13.0.0",
-    "@nestjs/platform-express": "^11.0.0",
-    "@nestjs/swagger": "^11.0.0",
-    "@nestjs/terminus": "^11.1.1",
-    "@nestjs/typeorm": "^11.0.1",
-    "@opentelemetry/api": "^1.9.1",
+    "@nestjs/common": "11.1.28",
+    "@nestjs/config": "4.0.4",
+    "@nestjs/core": "11.1.28",
+    "@nestjs/cqrs": "11.0.3",
+    "@nestjs/graphql": "13.4.2",
+    "@nestjs/platform-express": "11.1.28",
+    "@nestjs/swagger": "11.4.6",
+    "@nestjs/terminus": "11.1.1",
+    "@nestjs/typeorm": "11.0.3",
+    "@opentelemetry/api": "1.9.1",
     "@opentelemetry/api-logs": "^0.221.0",
     "@opentelemetry/auto-instrumentations-node": "^0.79.0",
     "@opentelemetry/exporter-logs-otlp-proto": "^0.221.0",
