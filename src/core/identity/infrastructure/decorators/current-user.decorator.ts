@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-import { IPrincipal } from '../../application/ports/principal.interface';
+import { IPrincipal } from '../../application/interfaces/principal.interface';
 import { getPrincipal, getRequest } from '../guards/identity.guard';
 
 /** Factory behind `@CurrentUser()`, exported separately so it can be unit tested directly. */

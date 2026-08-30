@@ -1,7 +1,7 @@
 import { Request } from 'express';
 
 import { IIdentityProvider } from '../../application/ports/identity-provider.port';
-import { IPrincipal } from '../../application/ports/principal.interface';
+import { IPrincipal } from '../../application/interfaces/principal.interface';
 import { IdentityMcpContextBuilder } from './identity-mcp-context-builder.service';
 
 function buildIdentityProvider(): jest.Mocked<IIdentityProvider> {

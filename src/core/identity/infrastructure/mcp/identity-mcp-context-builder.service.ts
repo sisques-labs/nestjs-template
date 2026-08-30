@@ -9,7 +9,7 @@ import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
 } from '../../application/ports/identity-provider.port';
-import { IPrincipal } from '../../application/ports/principal.interface';
+import { IPrincipal } from '../../application/interfaces/principal.interface';
 import { extractBearerToken } from '../extract-bearer-token';
 
 export interface IIdentityMcpToolContext extends IBaseMcpToolContext {

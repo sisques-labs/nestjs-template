@@ -10,7 +10,7 @@ import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
 } from '../src/core/identity/application/ports/identity-provider.port';
-import { IPrincipal } from '../src/core/identity/application/ports/principal.interface';
+import { IPrincipal } from '../src/core/identity/application/interfaces/principal.interface';
 import { Role } from '../src/core/identity/domain/enums/role.enum';
 import { CurrentUser } from '../src/core/identity/infrastructure/decorators/current-user.decorator';
 import { Roles } from '../src/core/identity/infrastructure/decorators/roles.decorator';

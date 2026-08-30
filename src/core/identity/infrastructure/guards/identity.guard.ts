@@ -14,8 +14,8 @@ import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
 } from '../../application/ports/identity-provider.port';
-import { IPrincipal } from '../../application/ports/principal.interface';
-import { ISessionRecord } from '../../application/ports/session-record.interface';
+import { IPrincipal } from '../../application/interfaces/principal.interface';
+import { ISessionRecord } from '../../application/interfaces/session-record.interface';
 import {
   ISessionStore,
   SESSION_STORE,

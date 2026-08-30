@@ -5,9 +5,9 @@ import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
 } from '../src/core/identity/application/ports/identity-provider.port';
-import { IAuthorizationUrlOptions } from '../src/core/identity/application/ports/authorization-url-options.interface';
-import { IPrincipal } from '../src/core/identity/application/ports/principal.interface';
-import { ISessionRecord } from '../src/core/identity/application/ports/session-record.interface';
+import { IAuthorizationUrlOptions } from '../src/core/identity/application/interfaces/authorization-url-options.interface';
+import { IPrincipal } from '../src/core/identity/application/interfaces/principal.interface';
+import { ISessionRecord } from '../src/core/identity/application/interfaces/session-record.interface';
 import {
   ISessionStore,
   SESSION_STORE,
