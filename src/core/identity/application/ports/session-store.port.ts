@@ -11,7 +11,7 @@ export const SESSION_STORE = Symbol('SESSION_STORE');
  * (`oauth:{nonce}`, single-use, gone within minutes). No implementation
  * persists anything beyond its TTL — every write MUST carry one.
  */
-export interface ISessionStore {
+export interface ISessionStorePort {
   set(key: string, value: unknown, ttlSeconds: number): Promise<void>;
   get<T>(key: string): Promise<T | null>;
   delete(key: string): Promise<void>;
