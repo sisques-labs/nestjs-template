@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 
 import { IdentityProviderType } from '../../domain/enums/identity-provider-type.enum';
-import { IIdentityProvider } from '../ports/identity-provider.port';
+import { IIdentityProviderPort } from '../ports/identity-provider.port';
 
 /**
  * Resolves the single active `IIdentityProvider` adapter from
@@ -16,7 +16,7 @@ import { IIdentityProvider } from '../ports/identity-provider.port';
  */
 export async function identityProviderFactory(
   config: ConfigService,
-): Promise<IIdentityProvider> {
+): Promise<IIdentityProviderPort> {
   const provider = config.get<IdentityProviderType>('IDENTITY_PROVIDER');
 
   switch (provider) {
