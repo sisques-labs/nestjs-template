@@ -16,7 +16,7 @@ export const IDENTITY_PROVIDER = Symbol('IDENTITY_PROVIDER');
  * OIDC, ...). No implementation persists a local copy of the user — the
  * provider is always the source of truth.
  */
-export interface IIdentityProvider {
+export interface IIdentityProviderPort {
   login(credentials: ILoginCredentials): Promise<ITokenSet>;
   refreshToken(refreshToken: string): Promise<ITokenSet>;
   verifyToken(accessToken: string): Promise<IPrincipal>;
