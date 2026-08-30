@@ -1,6 +1,8 @@
 import { readFileSync } from 'fs';
 
 import { AGGREGATE_MODULE_MAP } from '@core/messaging/domain/topics/aggregate-module.map.generated';
+// The generator lives outside src/; there is no path alias for scripts/.
+// eslint-disable-next-line no-restricted-syntax -- repo-root scripts/ has no @ alias
 import {
   OUTPUT_PATH,
   collectMappings,

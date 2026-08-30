@@ -9,13 +9,13 @@ import type { DataSource } from 'typeorm';
 import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
-} from '../src/core/identity/application/ports/identity-provider.port';
-import { IPrincipal } from '../src/core/identity/application/interfaces/principal.interface';
-import { Role } from '../src/core/identity/domain/enums/role.enum';
-import { CurrentUser } from '../src/core/identity/infrastructure/decorators/current-user.decorator';
-import { Roles } from '../src/core/identity/infrastructure/decorators/roles.decorator';
-import { IdentityGuard } from '../src/core/identity/infrastructure/guards/identity.guard';
-import { RolesGuard } from '../src/core/identity/infrastructure/guards/roles.guard';
+} from '@core/identity/application/ports/identity-provider.port';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { Role } from '@core/identity/domain/enums/role.enum';
+import { CurrentUser } from '@core/identity/infrastructure/decorators/current-user.decorator';
+import { Roles } from '@core/identity/infrastructure/decorators/roles.decorator';
+import { IdentityGuard } from '@core/identity/infrastructure/guards/identity.guard';
+import { RolesGuard } from '@core/identity/infrastructure/guards/roles.guard';
 import type { E2EContext } from './helpers/app-bootstrap';
 
 const VALID_TOKEN = 'valid-token';

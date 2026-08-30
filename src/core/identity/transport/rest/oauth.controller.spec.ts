@@ -2,9 +2,9 @@ import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 
-import { IIdentityProvider } from '../../application/ports/identity-provider.port';
-import { ISessionStore } from '../../application/ports/session-store.port';
-import { OAuthStateService } from '../../application/services/oauth-state.service';
+import { IIdentityProvider } from '@core/identity/application/ports/identity-provider.port';
+import { ISessionStore } from '@core/identity/application/ports/session-store.port';
+import { OAuthStateService } from '@core/identity/application/services/oauth-state.service';
 import { OAuthController } from './oauth.controller';
 
 function buildIdentityProvider(): jest.Mocked<IIdentityProvider> {

@@ -24,6 +24,7 @@
     "paths": {
       "@core/*": ["src/core/*"],
       "@contexts/*": ["src/contexts/*"],
+      "@support/*": ["src/support/*"],
       "@modelcontextprotocol/sdk/server/mcp.js": [
         "node_modules/@modelcontextprotocol/sdk/dist/cjs/server/mcp"
       ],

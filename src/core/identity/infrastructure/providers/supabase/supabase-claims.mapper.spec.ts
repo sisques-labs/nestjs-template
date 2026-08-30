@@ -1,6 +1,6 @@
 import { JWTPayload } from 'jose';
 
-import { Role } from '../../../domain/enums/role.enum';
+import { Role } from '@core/identity/domain/enums/role.enum';
 import { mapSupabaseClaimsToPrincipal } from './supabase-claims.mapper';
 
 describe('mapSupabaseClaimsToPrincipal', () => {

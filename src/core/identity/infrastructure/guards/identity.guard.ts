@@ -1,4 +1,12 @@
 import {
+  IDENTITY_PROVIDER_PORT,
+  IIdentityProviderPort,
+} from '@core/identity/application/ports/identity-provider.port';
+import {
+  ISessionStorePort,
+  SESSION_STORE_PORT,
+} from '@core/identity/application/ports/session-store.port';
+import {
   CanActivate,
   ExecutionContext,
   Inject,
@@ -9,18 +17,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Request } from 'express';
-
-import {
-  IDENTITY_PROVIDER,
-  IIdentityProvider,
-} from '../../application/ports/identity-provider.port';
-import { IPrincipal } from '../../application/interfaces/principal.interface';
-import { ISessionRecord } from '../../application/interfaces/session-record.interface';
-import {
-  ISessionStore,
-  SESSION_STORE,
-} from '../../application/ports/session-store.port';
-import { extractBearerToken } from '../extract-bearer-token';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { ISessionRecord } from '@core/identity/application/interfaces/session-record.interface';
+import { extractBearerToken } from '@core/identity/infrastructure/extract-bearer-token';
 import { REQUEST_PRINCIPAL_KEY } from './request-principal.constant';
 
 const DEFAULT_SESSION_COOKIE_NAME = 'session';
@@ -40,11 +39,11 @@ const DEFAULT_SESSION_TTL_SECONDS = 86400;
 @Injectable()
 export class IdentityGuard implements CanActivate {
   constructor(
-    @Inject(IDENTITY_PROVIDER)
-    private readonly identityProvider: IIdentityProvider,
+    @Inject(IDENTITY_PROVIDER_PORT)
+    private readonly identityProvider: IIdentityProviderPort,
     @Optional()
-    @Inject(SESSION_STORE)
-    private readonly sessionStore: ISessionStore | undefined,
+    @Inject(SESSION_STORE_PORT)
+    private readonly sessionStore: ISessionStorePort | undefined,
     private readonly configService: ConfigService,
   ) {}
 

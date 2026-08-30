@@ -4,17 +4,17 @@ import type { DataSource } from 'typeorm';
 import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
-} from '../src/core/identity/application/ports/identity-provider.port';
-import { IAuthorizationUrlOptions } from '../src/core/identity/application/interfaces/authorization-url-options.interface';
-import { IPrincipal } from '../src/core/identity/application/interfaces/principal.interface';
-import { ISessionRecord } from '../src/core/identity/application/interfaces/session-record.interface';
+} from '@core/identity/application/ports/identity-provider.port';
+import { IAuthorizationUrlOptions } from '@core/identity/application/interfaces/authorization-url-options.interface';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { ISessionRecord } from '@core/identity/application/interfaces/session-record.interface';
 import {
   ISessionStore,
   SESSION_STORE,
-} from '../src/core/identity/application/ports/session-store.port';
-import { CurrentUser } from '../src/core/identity/infrastructure/decorators/current-user.decorator';
-import { IdentityGuard } from '../src/core/identity/infrastructure/guards/identity.guard';
-import { REDIS_CLIENT } from '../src/core/identity/infrastructure/session/redis-session.store';
+} from '@core/identity/application/ports/session-store.port';
+import { CurrentUser } from '@core/identity/infrastructure/decorators/current-user.decorator';
+import { IdentityGuard } from '@core/identity/infrastructure/guards/identity.guard';
+import { REDIS_CLIENT } from '@core/identity/infrastructure/session/redis-session.store';
 import type { E2EContext } from './helpers/app-bootstrap';
 
 /**

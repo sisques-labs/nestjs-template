@@ -165,7 +165,9 @@
     },
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^@core/(.*)$": "<rootDir>/core/$1"
+      "^@core/(.*)$": "<rootDir>/core/$1",
+      "^@contexts/(.*)$": "<rootDir>/contexts/$1",
+      "^@support/(.*)$": "<rootDir>/support/$1"
     }
   },
   "lint-staged": {

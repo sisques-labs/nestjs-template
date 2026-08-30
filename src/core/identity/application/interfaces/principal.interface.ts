@@ -1,4 +1,4 @@
-import { Role } from '../../domain/enums/role.enum';
+import { RoleEnum } from '@core/identity/domain/enums/role.enum';
 
 /**
  * Provider-agnostic identity of the caller, resolved from a verified access
@@ -16,6 +16,6 @@ import { Role } from '../../domain/enums/role.enum';
 export interface IPrincipal {
   sub: string;
   email: string | null;
-  roles: Role[];
+  roles: RoleEnum[];
   tenantIds: string[];
 }

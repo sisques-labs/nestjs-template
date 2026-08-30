@@ -1,4 +1,4 @@
-import { ISessionStore } from '../ports/session-store.port';
+import { ISessionStore } from '@core/identity/application/ports/session-store.port';
 import { OAuthStateService } from './oauth-state.service';
 
 function buildSessionStore(): jest.Mocked<ISessionStore> {

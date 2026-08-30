@@ -1,7 +1,7 @@
 import { ExecutionContext } from '@nestjs/common';
 
-import { IPrincipal } from '../../application/interfaces/principal.interface';
-import { REQUEST_PRINCIPAL_KEY } from '../guards/request-principal.constant';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { REQUEST_PRINCIPAL_KEY } from '@core/identity/infrastructure/guards/request-principal.constant';
 import { currentUserFactory } from './current-user.decorator';
 
 function buildContext(request: Record<string, unknown>): ExecutionContext {

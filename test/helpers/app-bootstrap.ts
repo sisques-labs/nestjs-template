@@ -5,8 +5,8 @@ import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 
-import { AppModule } from '../../src/app.module';
-import { BaseExceptionFilter } from '../../src/core/filters/base-exception.filter';
+import { AppModule } from '../../src/app.module'; // eslint-disable-line no-restricted-syntax -- AppModule lives at src root; no path alias
+import { BaseExceptionFilter } from '@core/filters/base-exception.filter';
 import { bootstrapTestDataSource } from './test-data-source';
 
 export interface E2EContext {

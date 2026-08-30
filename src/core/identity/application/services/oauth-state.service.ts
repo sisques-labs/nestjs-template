@@ -1,8 +1,9 @@
-import { createHash, randomBytes, randomUUID } from 'crypto';
-
+import {
+  ISessionStorePort,
+  SESSION_STORE_PORT,
+} from '@core/identity/application/ports/session-store.port';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-
-import { ISessionStorePort, SESSION_STORE } from '../ports/session-store.port';
+import { createHash, randomBytes, randomUUID } from 'crypto';
 
 /**
  * TTL for a pending OAuth `state`/PKCE entry — the window between
@@ -28,7 +29,8 @@ export class OAuthStateService {
   private readonly logger = new Logger(OAuthStateService.name);
 
   constructor(
-    @Inject(SESSION_STORE) private readonly sessionStore: ISessionStorePort,
+    @Inject(SESSION_STORE_PORT)
+    private readonly sessionStore: ISessionStorePort,
   ) {}
 
   async start(): Promise<{

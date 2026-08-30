@@ -8,9 +8,9 @@ import { Request } from 'express';
 import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
-} from '../../application/ports/identity-provider.port';
-import { IPrincipal } from '../../application/interfaces/principal.interface';
-import { extractBearerToken } from '../extract-bearer-token';
+} from '@core/identity/application/ports/identity-provider.port';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { extractBearerToken } from '@core/identity/infrastructure/extract-bearer-token';
 
 export interface IIdentityMcpToolContext extends IBaseMcpToolContext {
   principal?: IPrincipal;

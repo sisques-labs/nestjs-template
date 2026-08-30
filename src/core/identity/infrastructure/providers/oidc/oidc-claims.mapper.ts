@@ -1,7 +1,7 @@
 import { JWTPayload } from 'jose';
 
-import { IPrincipal } from '../../../application/interfaces/principal.interface';
-import { mapRoleNames } from '../shared/map-role-names';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { mapRoleNames } from '@core/identity/infrastructure/providers/shared/map-role-names';
 
 /**
  * Maps a verified generic-OIDC access/ID token's claims onto the shared

@@ -20,17 +20,17 @@ import { Request, Response } from 'express';
 import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
-} from '../../application/ports/identity-provider.port';
-import { ISessionRecord } from '../../application/interfaces/session-record.interface';
+} from '@core/identity/application/ports/identity-provider.port';
+import { ISessionRecord } from '@core/identity/application/interfaces/session-record.interface';
 import {
   ISessionStore,
   SESSION_STORE,
-} from '../../application/ports/session-store.port';
-import { OAuthStateService } from '../../application/services/oauth-state.service';
+} from '@core/identity/application/ports/session-store.port';
+import { OAuthStateService } from '@core/identity/application/services/oauth-state.service';
 import {
   buildSessionCookie,
   clearSessionCookieOptions,
-} from '../../infrastructure/session/session-cookie';
+} from '@core/identity/infrastructure/session/session-cookie';
 
 const OAUTH_NONCE_COOKIE_NAME = 'oauth_nonce';
 const OAUTH_NONCE_TTL_SECONDS = 300;

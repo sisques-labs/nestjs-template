@@ -20,7 +20,7 @@ import { SharedGraphQLModule } from '@sisques-labs/nestjs-kit/graphql';
 import { McpModule } from '@sisques-labs/nestjs-kit/mcp';
 import { MessagingModule } from '@sisques-labs/nestjs-kit/messaging';
 
-import { SupportModule } from '../support/support.module';
+import { SupportModule } from '@support/support.module';
 
 // Cross-cutting infrastructure every bounded context relies on: config, DB,
 // transports, observability. Add new app-wide wiring here, not in AppModule.

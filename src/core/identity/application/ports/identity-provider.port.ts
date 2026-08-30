@@ -1,9 +1,9 @@
 import { IUserAttributes } from '@core/identity/application/interfaces/user-attributes.interface';
-import { IAuthorizationCodeExchange } from '../interfaces/authorization-code-exchange.interface';
-import { IAuthorizationUrlOptions } from '../interfaces/authorization-url-options.interface';
-import { ILoginCredentials } from '../interfaces/login-credentials.interface';
-import { IPrincipal } from '../interfaces/principal.interface';
-import { ITokenSet } from '../interfaces/token-set.interface';
+import { IAuthorizationCodeExchange } from '@core/identity/application/interfaces/authorization-code-exchange.interface';
+import { IAuthorizationUrlOptions } from '@core/identity/application/interfaces/authorization-url-options.interface';
+import { ILoginCredentials } from '@core/identity/application/interfaces/login-credentials.interface';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { ITokenSet } from '@core/identity/application/interfaces/token-set.interface';
 
 /**
  * DI token for the active `IIdentityProviderPort` adapter, bound by

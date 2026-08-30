@@ -1,4 +1,4 @@
-import { IIdentityProvider } from '../../application/ports/identity-provider.port';
+import { IIdentityProvider } from '@core/identity/application/ports/identity-provider.port';
 import { AuthController } from './auth.controller';
 
 function buildIdentityProvider(): jest.Mocked<IIdentityProvider> {

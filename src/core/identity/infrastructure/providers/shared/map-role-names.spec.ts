@@ -1,4 +1,4 @@
-import { Role } from '../../../domain/enums/role.enum';
+import { Role } from '@core/identity/domain/enums/role.enum';
 import { mapRoleNames } from './map-role-names';
 
 describe('mapRoleNames', () => {

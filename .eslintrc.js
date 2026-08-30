@@ -50,6 +50,33 @@ module.exports = {
       'error',
       { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
     ],
+    // Prettier cannot rewrite import specifiers. Ban parent-relative paths
+    // so cross-directory imports must use @core/*, @contexts/*, or
+    // @support/*. Same-directory ./ imports are allowed. ImportExpression
+    // covers dynamic import('../...') in factories.
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: "ImportDeclaration[source.value=/^\\.\\./]",
+        message:
+          'Use @core/*, @contexts/*, or @support/* path aliases instead of relative parent imports. Same-directory ./ imports are allowed.',
+      },
+      {
+        selector: "ImportExpression[source.value=/^\\.\\./]",
+        message:
+          'Use @core/*, @contexts/*, or @support/* path aliases instead of relative parent imports. Same-directory ./ imports are allowed.',
+      },
+      {
+        selector: "ExportNamedDeclaration[source.value=/^\\.\\./]",
+        message:
+          'Use @core/*, @contexts/*, or @support/* path aliases instead of relative parent imports. Same-directory ./ imports are allowed.',
+      },
+      {
+        selector: "ExportAllDeclaration[source.value=/^\\.\\./]",
+        message:
+          'Use @core/*, @contexts/*, or @support/* path aliases instead of relative parent imports. Same-directory ./ imports are allowed.',
+      },
+    ],
     // A bounded context may only import its OWN context. Reaching another
     // context's domain/application is allowed exclusively from
     // infrastructure/adapters/ (the port implementation).

@@ -6,7 +6,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { DataSource } from 'typeorm';
 import { SharedGraphQLModule } from '@sisques-labs/nestjs-kit/graphql';
 
-import { appConfig } from '../../src/core/config/app.config';
+import { appConfig } from '@core/config/app.config';
 import { bootstrapTestDataSource } from './test-data-source';
 
 const DB_HOST = process.env.DATABASE_HOST ?? 'localhost';

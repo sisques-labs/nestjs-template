@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { Role } from '../../domain/enums/role.enum';
-import { ROLES_KEY } from '../decorators/roles.decorator';
+import { Role } from '@core/identity/domain/enums/role.enum';
+import { ROLES_KEY } from '@core/identity/infrastructure/decorators/roles.decorator';
 import { getPrincipal, getRequest } from './identity.guard';
 
 /**

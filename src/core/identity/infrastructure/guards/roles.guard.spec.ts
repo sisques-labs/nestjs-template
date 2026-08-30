@@ -1,7 +1,7 @@
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { Role } from '../../domain/enums/role.enum';
+import { Role } from '@core/identity/domain/enums/role.enum';
 import { REQUEST_PRINCIPAL_KEY } from './request-principal.constant';
 import { RolesGuard } from './roles.guard';
 

@@ -12,8 +12,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
-} from '../../application/ports/identity-provider.port';
-import { ITokenSet } from '../../application/interfaces/token-set.interface';
+} from '@core/identity/application/ports/identity-provider.port';
+import { ITokenSet } from '@core/identity/application/interfaces/token-set.interface';
 import { LoginDto } from './dtos/login.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { TokenSetResponseDto } from './dtos/token-set-response.dto';

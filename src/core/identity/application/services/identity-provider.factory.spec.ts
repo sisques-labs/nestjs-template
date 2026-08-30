@@ -1,21 +1,24 @@
 import { ConfigService } from '@nestjs/config';
 
 jest.mock(
-  '../../infrastructure/providers/cognito/cognito-identity.provider',
+  '@core/identity/infrastructure/providers/cognito/cognito-identity.provider',
   () => ({ CognitoIdentityProvider: jest.fn() }),
 );
 jest.mock(
-  '../../infrastructure/providers/supabase/supabase-identity.provider',
+  '@core/identity/infrastructure/providers/supabase/supabase-identity.provider',
   () => ({ SupabaseIdentityProvider: jest.fn() }),
 );
-jest.mock('../../infrastructure/providers/oidc/oidc-identity.provider', () => ({
-  OidcIdentityProvider: jest.fn(),
-}));
+jest.mock(
+  '@core/identity/infrastructure/providers/oidc/oidc-identity.provider',
+  () => ({
+    OidcIdentityProvider: jest.fn(),
+  }),
+);
 
-import { IdentityProviderType } from '../../domain/enums/identity-provider-type.enum';
-import { CognitoIdentityProvider } from '../../infrastructure/providers/cognito/cognito-identity.provider';
-import { OidcIdentityProvider } from '../../infrastructure/providers/oidc/oidc-identity.provider';
-import { SupabaseIdentityProvider } from '../../infrastructure/providers/supabase/supabase-identity.provider';
+import { IdentityProviderType } from '@core/identity/domain/enums/identity-provider-type.enum';
+import { CognitoIdentityProvider } from '@core/identity/infrastructure/providers/cognito/cognito-identity.provider';
+import { OidcIdentityProvider } from '@core/identity/infrastructure/providers/oidc/oidc-identity.provider';
+import { SupabaseIdentityProvider } from '@core/identity/infrastructure/providers/supabase/supabase-identity.provider';
 import { identityProviderFactory } from './identity-provider.factory';
 
 function buildConfig(

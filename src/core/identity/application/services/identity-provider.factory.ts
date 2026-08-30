@@ -1,7 +1,8 @@
 import { ConfigService } from '@nestjs/config';
 
-import { IdentityProviderType } from '../../domain/enums/identity-provider-type.enum';
-import { IIdentityProviderPort } from '../ports/identity-provider.port';
+import { UnsupportedIdentityException } from '@core/identity/application/exceptions/unsupported-identity.exception';
+import { IdentityProviderTypeEnum } from '@core/identity/domain/enums/identity-provider-type.enum';
+import { IIdentityProviderPort } from '@core/identity/application/ports/identity-provider.port';
 
 /**
  * Resolves the single active `IIdentityProvider` adapter from
@@ -17,27 +18,25 @@ import { IIdentityProviderPort } from '../ports/identity-provider.port';
 export async function identityProviderFactory(
   config: ConfigService,
 ): Promise<IIdentityProviderPort> {
-  const provider = config.get<IdentityProviderType>('IDENTITY_PROVIDER');
+  const provider = config.get<IdentityProviderTypeEnum>('IDENTITY_PROVIDER');
 
   switch (provider) {
-    case IdentityProviderType.COGNITO: {
+    case IdentityProviderTypeEnum.COGNITO: {
       const { CognitoIdentityProvider } =
-        await import('../../infrastructure/providers/cognito/cognito-identity.provider');
+        await import('@core/identity/infrastructure/providers/cognito/cognito-identity.provider');
       return new CognitoIdentityProvider(config);
     }
-    case IdentityProviderType.SUPABASE: {
+    case IdentityProviderTypeEnum.SUPABASE: {
       const { SupabaseIdentityProvider } =
-        await import('../../infrastructure/providers/supabase/supabase-identity.provider');
+        await import('@core/identity/infrastructure/providers/supabase/supabase-identity.provider');
       return new SupabaseIdentityProvider(config);
     }
-    case IdentityProviderType.OIDC: {
+    case IdentityProviderTypeEnum.OIDC: {
       const { OidcIdentityProvider } =
-        await import('../../infrastructure/providers/oidc/oidc-identity.provider');
+        await import('@core/identity/infrastructure/providers/oidc/oidc-identity.provider');
       return new OidcIdentityProvider(config);
     }
     default:
-      throw new Error(
-        `Unsupported IDENTITY_PROVIDER "${String(provider)}". Supported values: ${Object.values(IdentityProviderType).join(', ')}.`,
-      );
+      throw new UnsupportedIdentityException(String(provider));
   }
 }

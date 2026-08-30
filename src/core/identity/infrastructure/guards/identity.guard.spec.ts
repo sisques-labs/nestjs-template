@@ -1,10 +1,10 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { IIdentityProvider } from '../../application/ports/identity-provider.port';
-import { IPrincipal } from '../../application/interfaces/principal.interface';
-import { ISessionRecord } from '../../application/interfaces/session-record.interface';
-import { ISessionStore } from '../../application/ports/session-store.port';
+import { IIdentityProvider } from '@core/identity/application/ports/identity-provider.port';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { ISessionRecord } from '@core/identity/application/interfaces/session-record.interface';
+import { ISessionStore } from '@core/identity/application/ports/session-store.port';
 import { getPrincipal, IdentityGuard } from './identity.guard';
 
 interface FakeRequest {

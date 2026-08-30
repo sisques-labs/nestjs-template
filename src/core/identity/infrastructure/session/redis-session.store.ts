@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Redis } from 'ioredis';
 
-import { ISessionStore } from '../../application/ports/session-store.port';
+import { ISessionStore } from '@core/identity/application/ports/session-store.port';
 
 /**
  * DI token for the `ioredis` client instance backing `RedisSessionStore`.

@@ -3,13 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import * as client from 'openid-client';
 
-import { IAuthorizationCodeExchange } from '../../../application/interfaces/authorization-code-exchange.interface';
-import { IAuthorizationUrlOptions } from '../../../application/interfaces/authorization-url-options.interface';
-import { IIdentityProvider } from '../../../application/ports/identity-provider.port';
-import { ILoginCredentials } from '../../../application/interfaces/login-credentials.interface';
-import { IPrincipal } from '../../../application/interfaces/principal.interface';
-import { ITokenSet } from '../../../application/interfaces/token-set.interface';
-import { IUserAttributes } from '../../../application/interfaces/user-attributes.interface';
+import { IAuthorizationCodeExchange } from '@core/identity/application/interfaces/authorization-code-exchange.interface';
+import { IAuthorizationUrlOptions } from '@core/identity/application/interfaces/authorization-url-options.interface';
+import { IIdentityProvider } from '@core/identity/application/ports/identity-provider.port';
+import { ILoginCredentials } from '@core/identity/application/interfaces/login-credentials.interface';
+import { IPrincipal } from '@core/identity/application/interfaces/principal.interface';
+import { ITokenSet } from '@core/identity/application/interfaces/token-set.interface';
+import { IUserAttributes } from '@core/identity/application/interfaces/user-attributes.interface';
 import { mapOidcClaimsToPrincipal } from './oidc-claims.mapper';
 
 const OIDC_ADMIN_API_ERROR =
