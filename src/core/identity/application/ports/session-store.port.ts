@@ -1,7 +1,7 @@
 /**
- * DI token for the active `ISessionStore` adapter.
+ * DI token for the active `ISessionStorePort` adapter.
  */
-export const SESSION_STORE = Symbol('SESSION_STORE');
+export const SESSION_STORE_PORT = Symbol('SESSION_STORE_PORT');
 
 /**
  * Server-side key/value store backing the OAuth/BFF session login flow.

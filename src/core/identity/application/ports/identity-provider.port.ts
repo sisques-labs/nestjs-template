@@ -6,10 +6,10 @@ import { ITokenSet } from '../interfaces/token-set.interface';
 import { IUserAttributes } from '../interfaces/user-attributes.interface';
 
 /**
- * DI token for the active `IIdentityProvider` adapter, bound by
+ * DI token for the active `IIdentityProviderPort` adapter, bound by
  * `identity-provider.factory.ts` from `IDENTITY_PROVIDER`.
  */
-export const IDENTITY_PROVIDER = Symbol('IDENTITY_PROVIDER');
+export const IDENTITY_PROVIDER_PORT = Symbol('IDENTITY_PROVIDER_PORT');
 
 /**
  * Bridge to an external identity provider (Cognito, Supabase, generic
