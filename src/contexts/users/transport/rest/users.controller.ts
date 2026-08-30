@@ -11,7 +11,7 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { IPrincipal } from '@core/identity/application/ports/principal.interface';
+import { IPrincipal } from '@core/identity/application/ports/interfaces/principal.interface';
 import { CurrentUser } from '@core/identity/infrastructure/decorators/current-user.decorator';
 import { IdentityGuard } from '@core/identity/infrastructure/guards/identity.guard';
 import { TenantContextService } from '@core/tenancy/application/services/tenant-context.service';

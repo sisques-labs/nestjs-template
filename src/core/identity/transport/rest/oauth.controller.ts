@@ -21,7 +21,7 @@ import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
 } from '../../application/ports/identity-provider.port';
-import { ISessionRecord } from '../../application/ports/session-record.interface';
+import { ISessionRecord } from '../../application/ports/interfaces/session-record.interface';
 import {
   ISessionStore,
   SESSION_STORE,

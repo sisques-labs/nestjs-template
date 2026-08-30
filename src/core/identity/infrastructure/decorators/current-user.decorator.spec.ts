@@ -1,6 +1,6 @@
 import { ExecutionContext } from '@nestjs/common';
 
-import { IPrincipal } from '../../application/ports/principal.interface';
+import { IPrincipal } from '../../application/ports/interfaces/principal.interface';
 import { REQUEST_PRINCIPAL_KEY } from '../guards/request-principal.constant';
 import { currentUserFactory } from './current-user.decorator';
 

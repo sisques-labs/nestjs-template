@@ -1,4 +1,4 @@
-import { Role } from '../../domain/enums/role.enum';
+import { Role } from '../../../domain/enums/role.enum';
 
 /**
  * Payload for provider-delegated user creation/updates. Adapters translate

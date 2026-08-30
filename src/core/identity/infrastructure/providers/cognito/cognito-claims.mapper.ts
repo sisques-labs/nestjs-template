@@ -1,6 +1,6 @@
 import { JWTPayload } from 'jose';
 
-import { IPrincipal } from '../../../application/ports/principal.interface';
+import { IPrincipal } from '../../../application/ports/interfaces/principal.interface';
 import { mapRoleNames } from '../shared/map-role-names';
 
 /**

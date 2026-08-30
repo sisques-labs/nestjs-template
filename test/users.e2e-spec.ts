@@ -4,7 +4,7 @@ import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
 } from '../src/core/identity/application/ports/identity-provider.port';
-import { IPrincipal } from '../src/core/identity/application/ports/principal.interface';
+import { IPrincipal } from '../src/core/identity/application/ports/interfaces/principal.interface';
 import { Role } from '../src/core/identity/domain/enums/role.enum';
 import type { E2EContext } from './helpers/app-bootstrap';
 

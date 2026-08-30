@@ -1,9 +1,9 @@
-import { IAuthorizationCodeExchange } from './authorization-code-exchange.interface';
-import { IAuthorizationUrlOptions } from './authorization-url-options.interface';
-import { ILoginCredentials } from './login-credentials.interface';
-import { IPrincipal } from './principal.interface';
-import { ITokenSet } from './token-set.interface';
-import { IUserAttributes } from './user-attributes.interface';
+import { IAuthorizationCodeExchange } from './interfaces/authorization-code-exchange.interface';
+import { IAuthorizationUrlOptions } from './interfaces/authorization-url-options.interface';
+import { ILoginCredentials } from './interfaces/login-credentials.interface';
+import { IPrincipal } from './interfaces/principal.interface';
+import { ITokenSet } from './interfaces/token-set.interface';
+import { IUserAttributes } from './interfaces/user-attributes.interface';
 
 /**
  * DI token for the active `IIdentityProvider` adapter, bound by

@@ -1,7 +1,7 @@
 import { CommandBus } from '@nestjs/cqrs';
 import { UnauthorizedException } from '@nestjs/common';
 
-import { IPrincipal } from '@core/identity/application/ports/principal.interface';
+import { IPrincipal } from '@core/identity/application/ports/interfaces/principal.interface';
 import { TenantContextService } from '@core/tenancy/application/services/tenant-context.service';
 
 import { UserViewModel } from '@contexts/users/domain/view-models/user.view-model';

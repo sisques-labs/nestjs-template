@@ -6,7 +6,7 @@ import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
 } from '../src/core/identity/application/ports/identity-provider.port';
-import { IPrincipal } from '../src/core/identity/application/ports/principal.interface';
+import { IPrincipal } from '../src/core/identity/application/ports/interfaces/principal.interface';
 import { Role } from '../src/core/identity/domain/enums/role.enum';
 import { IdentityGuard } from '../src/core/identity/infrastructure/guards/identity.guard';
 import { TenantContextService } from '../src/core/tenancy/application/services/tenant-context.service';

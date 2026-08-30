@@ -1,4 +1,4 @@
-import { Role } from '../../domain/enums/role.enum';
+import { Role } from '../../../domain/enums/role.enum';
 
 /**
  * Provider-agnostic identity of the caller, resolved from a verified access

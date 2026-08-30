@@ -13,7 +13,7 @@ import {
   IDENTITY_PROVIDER,
   IIdentityProvider,
 } from '../../application/ports/identity-provider.port';
-import { ITokenSet } from '../../application/ports/token-set.interface';
+import { ITokenSet } from '../../application/ports/interfaces/token-set.interface';
 import { LoginDto } from './dtos/login.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { TokenSetResponseDto } from './dtos/token-set-response.dto';
