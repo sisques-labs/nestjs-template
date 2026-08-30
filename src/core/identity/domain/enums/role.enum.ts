@@ -4,7 +4,7 @@
  * a configurable OIDC claim) onto these values — nothing downstream of
  * `IIdentityProvider.verifyToken()` ever sees a provider-specific role name.
  */
-export enum Role {
+export enum RoleEnum {
   ADMIN = 'admin',
   USER = 'user',
 }
