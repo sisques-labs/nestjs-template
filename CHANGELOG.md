@@ -1,6 +1,19 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.2.4] - 2026-08-31
+
+### Bug Fixes
+- **deps:** Pin dependency @opentelemetry/api-logs to 0.221.0 (#210) (dcb9ac8)
+- **deps:** Pin dependency @opentelemetry/auto-instrumentations-node to 0.79.0 (#211) (4dd92c0)
+- **deps:** Pin dependency @opentelemetry/exporter-logs-otlp-proto to 0.221.0 (#212) (14c7cc3)
+- **deps:** Pin dependency @opentelemetry/exporter-metrics-otlp-proto to 0.221.0 (#213) (9f9137f)
+- **deps:** Pin dependency @opentelemetry/exporter-trace-otlp-proto to 0.221.0 (#214) (4b26452)
+- **deps:** Pin dependency @opentelemetry/resources to 2.10.0 (#215) (3f0f61e)
+- **deps:** Pin dependency @opentelemetry/sdk-logs to 0.221.0 (#216) (929c8e2)
+- **deps:** Pin dependency @opentelemetry/sdk-metrics to 2.10.0 (#217) (24fddb9)
+- **deps:** Pin dependency @opentelemetry/sdk-node to 0.221.0 (#218) (bc63658)
+- **deps:** Pin dependency @opentelemetry/sdk-trace-base to 2.10.0 (#219) (d85e223)
 ## [0.2.3] - 2026-08-26
 
 ### Bug Fixes
