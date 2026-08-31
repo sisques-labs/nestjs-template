@@ -1,6 +1,20 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.2.3] - 2026-08-26
+
+### Bug Fixes
+- Disable pnpm engine-identity verification blocking install (38baf2c)
+- **deps:** Pin dependency @nestjs/common to 11.1.28 (#191) (6dd563a)
+- **deps:** Pin dependency @nestjs/config to 4.0.4 (#192) (d6b7dcc)
+- **deps:** Pin dependency @nestjs/core to 11.1.28 (#193) (4f4bcfd)
+- **deps:** Pin dependency @nestjs/cqrs to 11.0.3 (#194) (5b99dc0)
+- **deps:** Pin dependency @nestjs/graphql to 13.4.2 (#195) (0e5f628)
+- **deps:** Pin dependency @nestjs/platform-express to 11.1.28 (#196) (2c7a459)
+- **deps:** Pin dependency @nestjs/swagger to 11.4.6 (#197) (797d46f)
+- **deps:** Pin dependency @nestjs/terminus to 11.1.1 (#198) (869d3c6)
+- **deps:** Pin dependency @nestjs/typeorm to 11.0.3 (#199) (2299c8a)
+- **deps:** Pin dependency @opentelemetry/api to 1.9.1 (#200) (927993a)
 ## [0.2.2] - 2026-08-19
 
 ### Bug Fixes
