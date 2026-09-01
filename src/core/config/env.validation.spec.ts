@@ -1,4 +1,4 @@
-import { validateEnv } from './env.validation';
+import { validateEnv } from '@core/config/env.validation';
 
 function validEnv(
   overrides: Record<string, string | undefined> = {},

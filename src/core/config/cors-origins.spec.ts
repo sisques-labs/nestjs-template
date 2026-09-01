@@ -1,7 +1,7 @@
 import {
   resolveCorsOrigins,
   validateProductionCorsOrigins,
-} from './cors-origins';
+} from '@core/config/cors-origins';
 
 describe('resolveCorsOrigins', () => {
   it('uses CORS_ORIGINS when set', () => {

@@ -3,21 +3,22 @@ import {
   HealthCheckService,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
+import { Mocked, vi } from 'vitest';
 
-import { HealthController } from './health.controller';
+import { HealthController } from '@core/health/transport/rest/controllers/health.controller';
 
 describe('HealthController', () => {
   let controller: HealthController;
-  let health: jest.Mocked<HealthCheckService>;
-  let db: jest.Mocked<TypeOrmHealthIndicator>;
+  let health: Mocked<HealthCheckService>;
+  let db: Mocked<TypeOrmHealthIndicator>;
 
   beforeEach(() => {
     health = {
-      check: jest.fn(),
-    } as unknown as jest.Mocked<HealthCheckService>;
+      check: vi.fn(),
+    } as unknown as Mocked<HealthCheckService>;
     db = {
-      pingCheck: jest.fn(),
-    } as unknown as jest.Mocked<TypeOrmHealthIndicator>;
+      pingCheck: vi.fn(),
+    } as unknown as Mocked<TypeOrmHealthIndicator>;
     controller = new HealthController(health, db);
   });
 

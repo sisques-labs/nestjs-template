@@ -1,4 +1,4 @@
-import { PingResolver } from './ping.resolver';
+import { PingResolver } from '@core/transport/graphql/resolvers/ping.resolver';
 
 describe('PingResolver', () => {
   it('returns "pong"', () => {

@@ -1,4 +1,4 @@
-import { kafkaConfig } from './kafka.config';
+import { kafkaConfig } from '@core/config/kafka.config';
 
 describe('kafkaConfig', () => {
   const ORIGINAL_ENV = process.env;
