@@ -1,10 +1,12 @@
-import { otelConfig } from './otel.config';
+import { vi } from 'vitest';
+
+import { otelConfig } from '@core/config/otel.config';
 
 describe('otelConfig', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
     process.env = { ...originalEnv };
   });
 

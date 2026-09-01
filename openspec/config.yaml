@@ -1,9 +1,9 @@
 schema: spec-driven
 
 context: |
-  Tech stack: NestJS 10, TypeScript (strict), GraphQL (Apollo code-first) + REST, CQRS (@nestjs/cqrs), TypeORM + PostgreSQL, Jest, pnpm 9.15.4
+  Tech stack: NestJS 10, TypeScript (strict), GraphQL (Apollo code-first) + REST, CQRS (@nestjs/cqrs), TypeORM + PostgreSQL, Vitest, pnpm 9.15.4
   Architecture: DDD + CQRS + Hexagonal (Screaming Architecture). No bounded contexts yet — this is a fresh service template; the first context added defines the pattern every subsequent one follows. Layers: domain / application / infrastructure / transport
-  Testing: Jest unit (co-located .spec.ts, jest.Mocked<T>) + integration (test/integration/*.integration-spec.ts, real Postgres) + E2E (test/*.e2e-spec.ts, AppModule). Coverage: pnpm test:cov
+  Testing: Vitest unit (co-located .spec.ts, Mocked<T>) + integration (test/integration/*.integration-spec.ts, real Postgres) + E2E (test/*.e2e-spec.ts, AppModule). Coverage: pnpm test:cov
   Style: Prettier + ESLint, Husky + lint-staged. Conventional Commits. No AI attribution in commits.
 
 testing:
@@ -13,9 +13,9 @@ testing:
   e2e_command: "pnpm test:e2e"
   integration_command: "pnpm test:integration"
   layers:
-    unit: { available: true, tool: "jest + ts-jest" }
-    integration: { available: true, tool: "jest + postgres" }
-    e2e: { available: true, tool: "jest + supertest" }
+    unit: { available: true, tool: "vitest + swc" }
+    integration: { available: true, tool: "vitest + postgres" }
+    e2e: { available: true, tool: "vitest + supertest" }
   coverage: { available: true, command: "pnpm test:cov" }
   quality:
     linter: { available: true, command: "pnpm lint" }
@@ -47,7 +47,7 @@ rules:
     - Resolvers use CommandBus/QueryBus only — no direct service injection in transport
     - "MCP tools: every bounded context that should be AI-callable exposes its public commands and queries as MCP tools under transport/mcp/. Each tool is a class named {Name}McpTool implementing IMcpTool (from @sisques-labs/nestjs-kit/mcp), tagged with @McpTool() + @Injectable(), and registered in the context module via an MCP_TOOLS const array spread into providers. Tools dispatch through CommandBus/QueryBus only (like resolvers) and read request context from the injected IMcpToolContext. Each tool's Zod inputSchema lives in its own file under transport/mcp/schemas/ ({name}.schema.ts), never inline. Wire-level tool names are snake_case prefixed by the entity (e.g. order_create). The shared MCP transport (single /api/mcp endpoint, discovery, per-request server, McpModule.forRoot({ name, version, contextBuilder })) lives in @sisques-labs/nestjs-kit/mcp — see its README for the IMcpContextBuilder extension point. Do NOT expose credential/session or PII-sensitive contexts without an explicit decision."
     - Repository interfaces live in domain; never import infra from domain
-    - No module spec files; unit tests use jest.Mocked<T>, no @nestjs/testing
+    - No module spec files; unit tests use Mocked<T> from vitest, no @nestjs/testing
     - Imports: always use @contexts/{context}/ path aliases for any cross-directory import within a bounded context. Relative ../ imports are forbidden. Same-directory ./ imports are allowed.
     - Value objects named {Name}ValueObject (not VO); extend UuidValueObject/StringValueObject/EnumValueObject from @sisques-labs/nestjs-kit
     - Enums live in domain/enums/, enum value objects extend EnumValueObject<typeof EnumType>

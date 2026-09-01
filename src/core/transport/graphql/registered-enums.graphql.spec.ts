@@ -1,8 +1,9 @@
 import { FilterOperator, SortDirection } from '@sisques-labs/nestjs-kit';
+import { vi } from 'vitest';
 
-const registerEnumType = jest.fn();
+const registerEnumType = vi.fn();
 
-jest.mock('@nestjs/graphql', () => ({
+vi.mock('@nestjs/graphql', () => ({
   registerEnumType: (...args: unknown[]) => registerEnumType(...args),
 }));
 

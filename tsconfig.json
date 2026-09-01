@@ -14,7 +14,7 @@
     "incremental": true,
     "skipLibCheck": true,
     "strict": true,
-    "types": ["node", "jest"],
+    "types": ["node", "vitest/globals"],
     "strictNullChecks": true,
     "noImplicitAny": true,
     "strictBindCallApply": false,
@@ -23,6 +23,8 @@
     "paths": {
       "@core/*": ["src/core/*"],
       "@contexts/*": ["src/contexts/*"],
+      "@support/*": ["src/support/*"],
+      "@scripts/*": ["scripts/*"],
       "@modelcontextprotocol/sdk/server/mcp.js": [
         "node_modules/@modelcontextprotocol/sdk/dist/cjs/server/mcp"
       ],
@@ -45,5 +47,6 @@
         "node_modules/@sisques-labs/nestjs-kit/dist/entrypoints/typeorm"
       ]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "vitest.*.mts"]
 }

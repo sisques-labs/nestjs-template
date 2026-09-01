@@ -1,13 +1,13 @@
-import { appConfig } from './config/app.config';
-import { validateEnv } from './config/env.validation';
-import { kafkaConfig } from './config/kafka.config';
-import { otelConfig } from './config/otel.config';
-import { postgresConfig } from './config/postgres.config';
-import { AGGREGATE_MODULE_MAP } from './messaging/domain/topics/aggregate-module.map.generated';
-import { HealthModule } from './health/health.module';
-import { ObservabilityModule } from './observability/observability.module';
-import { PingResolver } from './transport/graphql/resolvers/ping.resolver';
-import './transport/graphql/registered-enums.graphql';
+import { appConfig } from '@core/config/app.config';
+import { validateEnv } from '@core/config/env.validation';
+import { kafkaConfig } from '@core/config/kafka.config';
+import { otelConfig } from '@core/config/otel.config';
+import { postgresConfig } from '@core/config/postgres.config';
+import { AGGREGATE_MODULE_MAP } from '@core/messaging/domain/topics/aggregate-module.map.generated';
+import { HealthModule } from '@core/health/health.module';
+import { ObservabilityModule } from '@core/observability/observability.module';
+import { PingResolver } from '@core/transport/graphql/resolvers/ping.resolver';
+import '@core/transport/graphql/registered-enums.graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -18,7 +18,7 @@ import { SharedGraphQLModule } from '@sisques-labs/nestjs-kit/graphql';
 import { McpModule } from '@sisques-labs/nestjs-kit/mcp';
 import { MessagingModule } from '@sisques-labs/nestjs-kit/messaging';
 
-import { SupportModule } from '../support/support.module';
+import { SupportModule } from '@support/support.module';
 
 // Cross-cutting infrastructure every bounded context relies on: config, DB,
 // transports, observability. Add new app-wide wiring here, not in AppModule.

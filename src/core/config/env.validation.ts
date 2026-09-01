@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { validateProductionCorsOrigins } from './cors-origins';
+import { validateProductionCorsOrigins } from '@core/config/cors-origins';
 
 function formatZodIssues(issues: z.ZodIssue[]): string {
   return issues

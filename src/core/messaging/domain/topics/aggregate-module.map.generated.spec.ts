@@ -5,7 +5,7 @@ import {
   OUTPUT_PATH,
   collectMappings,
   render,
-} from '../../../../../scripts/generate-aggregate-module-map';
+} from '@scripts/generate-aggregate-module-map';
 
 describe('aggregate-module.map.generated', () => {
   it('is in sync with the aggregates on disk (run `pnpm gen:topics`)', () => {

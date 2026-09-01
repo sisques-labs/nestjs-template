@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 
-import { resolveCorsOrigins } from './cors-origins';
+import { resolveCorsOrigins } from '@core/config/cors-origins';
 
 export const appConfig = registerAs('app', () => ({
   name: process.env.SERVICE_NAME?.trim() || 'nestjs-template',

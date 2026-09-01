@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { LoggingModule } from './logging/logging.module';
+import { LoggingModule } from '@support/logging/logging.module';
 
 const SUPPORT_MODULES = [LoggingModule];
 
