@@ -1,4 +1,4 @@
-import { otelConfig } from './otel.config';
+import { otelConfig } from '@core/config/otel.config';
 
 describe('otelConfig', () => {
   const originalEnv = process.env;

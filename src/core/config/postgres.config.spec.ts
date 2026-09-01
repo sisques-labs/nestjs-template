@@ -1,4 +1,4 @@
-import { postgresConfig } from './postgres.config';
+import { postgresConfig } from '@core/config/postgres.config';
 
 // TypeOrmModuleOptions is a broad union type. We cast to a typed record
 // to access individual connection fields (host, port, username, etc.) in assertions.

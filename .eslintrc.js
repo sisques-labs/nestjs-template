@@ -89,5 +89,40 @@ module.exports = {
         ],
       },
     },
+    {
+      // core/, contexts/, support/ and database/ each have their own path
+      // alias (@core, @contexts, @support) — relative imports are banned
+      // there, even within the same directory, so imports always read
+      // through the alias. Root-level files (main.ts, app.module.ts,
+      // telemetry.ts) have no alias of their own and are intentionally out
+      // of scope.
+      files: [
+        'src/core/**/*.ts',
+        'src/contexts/**/*.ts',
+        'src/support/**/*.ts',
+        'src/database/**/*.ts',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: [
+              {
+                name: '@nestjs/testing',
+                message:
+                  'Unit tests must use manual instantiation (jest.Mocked<T>). @nestjs/testing is allowed only in test/integration/ and test/**/*.e2e-spec.ts.',
+              },
+            ],
+            patterns: [
+              {
+                group: ['./*', '../*'],
+                message:
+                  'Relative imports are not allowed. Use the @core/*, @contexts/* or @support/* path alias instead.',
+              },
+            ],
+          },
+        ],
+      },
+    },
   ],
 };
