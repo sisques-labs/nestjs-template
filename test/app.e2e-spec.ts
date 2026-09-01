@@ -23,7 +23,7 @@ describe('App bootstrap (e2e)', () => {
   });
 
   it('REST health check responds', async () => {
-    const res = await ctx.http().get('/api/health');
+    const res = await ctx.http().get('/api/v1/health');
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('ok');
