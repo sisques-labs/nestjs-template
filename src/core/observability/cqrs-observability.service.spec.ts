@@ -1,7 +1,7 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SpanStatusCode, metrics, trace } from '@opentelemetry/api';
 
-import { CqrsObservabilityService } from './cqrs-observability.service';
+import { CqrsObservabilityService } from '@core/observability/cqrs-observability.service';
 
 jest.mock('@opentelemetry/api', () => {
   const actual = jest.requireActual('@opentelemetry/api');

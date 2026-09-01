@@ -4,7 +4,7 @@ import {
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 
-import { HealthController } from './health.controller';
+import { HealthController } from '@core/health/transport/rest/controllers/health.controller';
 
 describe('HealthController', () => {
   let controller: HealthController;
