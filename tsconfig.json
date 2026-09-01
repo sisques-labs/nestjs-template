@@ -14,7 +14,7 @@
     "incremental": true,
     "skipLibCheck": true,
     "strict": true,
-    "types": ["node", "jest"],
+    "types": ["node", "vitest/globals"],
     "strictNullChecks": true,
     "noImplicitAny": true,
     "strictBindCallApply": false,
@@ -47,5 +47,6 @@
         "node_modules/@sisques-labs/nestjs-kit/dist/entrypoints/typeorm"
       ]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "vitest.*.mts"]
 }

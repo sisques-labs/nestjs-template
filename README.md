@@ -74,7 +74,7 @@ pnpm dev              # nest start --watch
 |--------|-------------|
 | `pnpm dev` / `pnpm debug` / `pnpm prod` | Run the app (watch / debug / prod) |
 | `pnpm lint` | ESLint with `--fix` |
-| `pnpm test` / `pnpm test:cov` | Unit tests (Jest, co-located `*.spec.ts`) |
+| `pnpm test` / `pnpm test:cov` | Unit tests (Vitest, co-located `*.spec.ts`) |
 | `pnpm test:e2e` | E2E tests against a real Postgres (`docker-compose.test.yml`) |
 | `pnpm test:integration` | Integration tests (persistence boundaries) |
 | `pnpm migration:generate` / `:run` / `:revert` | TypeORM migrations |

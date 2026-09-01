@@ -1,14 +1,18 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SpanStatusCode, metrics, trace } from '@opentelemetry/api';
+import { Mock, Mocked, vi } from 'vitest';
 
 import { CqrsObservabilityService } from '@core/observability/cqrs-observability.service';
 
-jest.mock('@opentelemetry/api', () => {
-  const actual = jest.requireActual('@opentelemetry/api');
+vi.mock('@opentelemetry/api', async () => {
+  const actual =
+    await vi.importActual<typeof import('@opentelemetry/api')>(
+      '@opentelemetry/api',
+    );
   return {
     ...actual,
-    trace: { getTracer: jest.fn() },
-    metrics: { getMeter: jest.fn() },
+    trace: { getTracer: vi.fn() },
+    metrics: { getMeter: vi.fn() },
   };
 });
 
@@ -17,37 +21,37 @@ class TestCommand {
 }
 
 describe('CqrsObservabilityService', () => {
-  let commandBus: jest.Mocked<CommandBus>;
-  let queryBus: jest.Mocked<QueryBus>;
+  let commandBus: Mocked<CommandBus>;
+  let queryBus: Mocked<QueryBus>;
   let span: {
-    end: jest.Mock;
-    setStatus: jest.Mock;
-    recordException: jest.Mock;
+    end: Mock;
+    setStatus: Mock;
+    recordException: Mock;
   };
-  let tracer: { startActiveSpan: jest.Mock };
-  let histogram: { record: jest.Mock };
-  let counter: { add: jest.Mock };
+  let tracer: { startActiveSpan: Mock };
+  let histogram: { record: Mock };
+  let counter: { add: Mock };
   let service: CqrsObservabilityService;
 
   beforeEach(() => {
-    span = { end: jest.fn(), setStatus: jest.fn(), recordException: jest.fn() };
+    span = { end: vi.fn(), setStatus: vi.fn(), recordException: vi.fn() };
     tracer = {
-      startActiveSpan: jest.fn(
+      startActiveSpan: vi.fn(
         (_name: string, _opts: unknown, fn: (span: unknown) => unknown) =>
           fn(span),
       ),
     };
-    histogram = { record: jest.fn() };
-    counter = { add: jest.fn() };
+    histogram = { record: vi.fn() };
+    counter = { add: vi.fn() };
 
-    (trace.getTracer as jest.Mock).mockReturnValue(tracer);
-    (metrics.getMeter as jest.Mock).mockReturnValue({
-      createHistogram: jest.fn().mockReturnValue(histogram),
-      createCounter: jest.fn().mockReturnValue(counter),
+    (trace.getTracer as Mock).mockReturnValue(tracer);
+    (metrics.getMeter as Mock).mockReturnValue({
+      createHistogram: vi.fn().mockReturnValue(histogram),
+      createCounter: vi.fn().mockReturnValue(counter),
     });
 
-    commandBus = { execute: jest.fn() } as unknown as jest.Mocked<CommandBus>;
-    queryBus = { execute: jest.fn() } as unknown as jest.Mocked<QueryBus>;
+    commandBus = { execute: vi.fn() } as unknown as Mocked<CommandBus>;
+    queryBus = { execute: vi.fn() } as unknown as Mocked<QueryBus>;
 
     service = new CqrsObservabilityService(commandBus, queryBus);
   });
