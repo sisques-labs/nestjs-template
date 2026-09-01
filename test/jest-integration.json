@@ -8,7 +8,9 @@
   },
   "moduleNameMapper": {
     "^@contexts/(.*)$": "<rootDir>/src/contexts/$1",
-    "^@core/(.*)$": "<rootDir>/src/core/$1"
+    "^@core/(.*)$": "<rootDir>/src/core/$1",
+    "^@support/(.*)$": "<rootDir>/src/support/$1",
+    "^@scripts/(.*)$": "<rootDir>/scripts/$1"
   },
   "setupFiles": ["<rootDir>/test/helpers/env-setup.ts"],
   "globalSetup": "<rootDir>/test/global-setup.ts",
