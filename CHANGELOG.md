@@ -1,6 +1,17 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.3.0] - 2026-09-01
+
+### Bug Fixes
+- **test:** Map @support and @scripts aliases in e2e/integration jest configs (11b8061)
+
+### Chore
+- Ignore .claude/worktrees directory in .gitignore (13bbecd)
+
+### Features
+- **api:** Enable URI-based API versioning (16f1a06)
+- **eslint:** Forbid relative imports in core/contexts/support/database (81d9004)
 ## [0.2.4] - 2026-08-31
 
 ### Bug Fixes
