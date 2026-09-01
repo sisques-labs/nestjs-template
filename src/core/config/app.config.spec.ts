@@ -1,10 +1,12 @@
+import { vi } from 'vitest';
+
 import { appConfig } from '@core/config/app.config';
 
 describe('appConfig', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
+    vi.resetModules();
     process.env = { ...originalEnv };
   });
 

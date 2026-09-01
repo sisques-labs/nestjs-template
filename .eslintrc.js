@@ -13,7 +13,6 @@ module.exports = {
   root: true,
   env: {
     node: true,
-    jest: true,
   },
   ignorePatterns: ['.eslintrc.js', 'dist/**'],
   settings: {
@@ -82,7 +81,7 @@ module.exports = {
               {
                 name: '@nestjs/testing',
                 message:
-                  'Unit tests must use manual instantiation (jest.Mocked<T>). @nestjs/testing is allowed only in test/integration/ and test/**/*.e2e-spec.ts.',
+                  'Unit tests must use manual instantiation (Mocked<T> from vitest). @nestjs/testing is allowed only in test/integration/ and test/**/*.e2e-spec.ts.',
               },
             ],
           },
@@ -110,7 +109,7 @@ module.exports = {
               {
                 name: '@nestjs/testing',
                 message:
-                  'Unit tests must use manual instantiation (jest.Mocked<T>). @nestjs/testing is allowed only in test/integration/ and test/**/*.e2e-spec.ts.',
+                  'Unit tests must use manual instantiation (Mocked<T> from vitest). @nestjs/testing is allowed only in test/integration/ and test/**/*.e2e-spec.ts.',
               },
             ],
             patterns: [
