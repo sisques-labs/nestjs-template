@@ -63,3 +63,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # pnpm
 .pnpm-store
+
+# Git worktrees
+.claude/worktrees/
