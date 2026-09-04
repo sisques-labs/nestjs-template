@@ -1,4 +1,5 @@
 import { appConfig } from '@core/config/app.config';
+import { eventStoreConfig } from '@core/config/event-store.config';
 import { validateEnv } from '@core/config/env.validation';
 import { kafkaConfig } from '@core/config/kafka.config';
 import { otelConfig } from '@core/config/otel.config';
@@ -14,6 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { EventStoreModule } from '@sisques-labs/nestjs-kit/event-store';
 import { SharedGraphQLModule } from '@sisques-labs/nestjs-kit/graphql';
 import { McpModule } from '@sisques-labs/nestjs-kit/mcp';
 import { MessagingModule } from '@sisques-labs/nestjs-kit/messaging';
@@ -29,7 +31,13 @@ const CORE_MODULES = [
   ConfigModule.forRoot({
     isGlobal: true,
     validate: validateEnv,
-    load: [postgresConfig, appConfig, otelConfig, kafkaConfig],
+    load: [
+      postgresConfig,
+      appConfig,
+      otelConfig,
+      kafkaConfig,
+      eventStoreConfig,
+    ],
     cache: true,
   }),
   TypeOrmModule.forRootAsync({
@@ -50,6 +58,7 @@ const CORE_MODULES = [
   }),
   ObservabilityModule,
   MessagingModule.forRoot({ aggregateModuleMap: AGGREGATE_MODULE_MAP }),
+  EventStoreModule.forRoot(),
   HealthModule,
   // No auth yet, so the default context builder (`{ requestId }`) is used —
   // pass `contextBuilder` here once this service resolves an identity.
