@@ -40,6 +40,9 @@ const baseEnvSchema = z
       .optional(),
     KAFKA_SASL_USERNAME: z.string().optional(),
     KAFKA_SASL_PASSWORD: z.string().optional(),
+    EVENTSTORE_ENABLED: z.enum(['true', 'false']).optional(),
+    EVENTSTORE_CONNECTION_STRING: z.string().optional(),
+    EVENTSTORE_STREAM_PREFIX: z.string().optional(),
   })
   .superRefine((env, ctx) => {
     if (env.KAFKA_ENABLED === 'true' && !env.KAFKA_BROKERS?.trim()) {
