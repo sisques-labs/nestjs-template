@@ -90,8 +90,8 @@ importers:
         specifier: ^0.31.0
         version: 0.31.0
       '@sisques-labs/nestjs-kit':
-        specifier: ^1.8.0
-        version: 1.8.0(4b5c4e01c744623f5f99b9e936670e3c)
+        specifier: ^1.10.0
+        version: 1.10.0(600228555493b3387c423a7032bef8c5)
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -1609,8 +1609,8 @@ packages:
   '@scarf/scarf@1.4.0':
     resolution: {integrity: sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==}
 
-  '@sisques-labs/nestjs-kit@1.8.0':
-    resolution: {integrity: sha512-rkagTJg4RcN3rdeX0GCpWy8jVNPwVV2uKi2zEPI4/EX/Vc3waXNEn583CGJ99NWjnxfEcLaM46rU5IvoUWg7GA==}
+  '@sisques-labs/nestjs-kit@1.10.0':
+    resolution: {integrity: sha512-Rs2185DbiI3LNiwfANv8Ly1RdRMnAUZk29RWL0KBzppKX8CeQOuDnx3XS3kAdJNvwRuZkg8TM5YhSC+LYLqi5A==}
     peerDependencies:
       '@apollo/server': '>=4.0.0'
       '@kafkajs/confluent-schema-registry': '>=3.0.0'
@@ -1623,6 +1623,7 @@ packages:
       '@nestjs/core': '>=10.0.0'
       '@nestjs/cqrs': '>=10.0.0'
       '@nestjs/graphql': '>=12.0.0'
+      '@nestjs/jwt': '>=10.0.0'
       '@nestjs/typeorm': '>=10.0.0'
       '@willsoto/nestjs-prometheus': '>=6.0.0'
       express: '>=4.0.0'
@@ -1652,6 +1653,8 @@ packages:
       '@nestjs/config':
         optional: true
       '@nestjs/graphql':
+        optional: true
+      '@nestjs/jwt':
         optional: true
       '@nestjs/typeorm':
         optional: true
@@ -6799,7 +6802,7 @@ snapshots:
 
   '@scarf/scarf@1.4.0': {}
 
-  '@sisques-labs/nestjs-kit@1.8.0(4b5c4e01c744623f5f99b9e936670e3c)':
+  '@sisques-labs/nestjs-kit@1.10.0(600228555493b3387c423a7032bef8c5)':
     dependencies:
       '@nestjs/common': 11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
       '@nestjs/core': 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -6818,6 +6821,7 @@ snapshots:
       '@nestjs/apollo': 12.2.2(@apollo/server@4.13.0(graphql@17.0.2)(supports-color@8.1.1))(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.28)(@nestjs/graphql@13.4.2(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.28)(class-transformer@0.5.1)(class-validator@0.15.1)(graphql@17.0.2)(reflect-metadata@0.2.2))(graphql@17.0.2)
       '@nestjs/config': 4.0.4(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(rxjs@7.8.2)
       '@nestjs/graphql': 13.4.2(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.28)(class-transformer@0.5.1)(class-validator@0.15.1)(graphql@17.0.2)(reflect-metadata@0.2.2)
+      '@nestjs/jwt': 11.0.2(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))
       '@nestjs/typeorm': 11.0.3(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.3)(typescript@6.0.3)))
       express: 5.2.1(supports-color@8.1.1)
       graphql: 17.0.2
