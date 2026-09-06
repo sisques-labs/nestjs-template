@@ -90,7 +90,7 @@ importers:
         specifier: 1.8.0
         version: 1.8.0(d526df8d265a71d9502df0ffa642428f)
       class-transformer:
-        specifier: ^0.5.1
+        specifier: 0.5.1
         version: 0.5.1
       class-validator:
         specifier: ^0.15.0
