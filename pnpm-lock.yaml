@@ -87,7 +87,7 @@ importers:
         specifier: 0.31.0
         version: 0.31.0
       '@sisques-labs/nestjs-kit':
-        specifier: ^1.8.0
+        specifier: 1.8.0
         version: 1.8.0(d526df8d265a71d9502df0ffa642428f)
       class-transformer:
         specifier: ^0.5.1
