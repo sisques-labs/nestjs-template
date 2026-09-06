@@ -42,6 +42,7 @@ every subsequent one follows (see the `architecture` skill in
 | Logging | `src/support/logging/` | Winston via `@sisques-labs/nestjs-kit`, JSON file + console transports, plus an OTel transport forwarding to the pipeline below |
 | Kafka event forwarding | `@sisques-labs/nestjs-kit/messaging` (wired in `src/core/core.module.ts`); `src/core/messaging/` keeps only the app-local, auto-generated aggregate→topic map | Opt-in (`KAFKA_ENABLED`), no-op when disabled |
 | OpenTelemetry | `src/telemetry.ts` (bootstrap), `src/core/observability/` (CQRS spans+metrics) | Traces + metrics + logs exported via OTLP to a collector; all disabled together until `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Auto-instruments HTTP/Express, GraphQL, Postgres, Kafka; CQRS command/query buses get spans + duration/count metrics; every Winston log line is forwarded too (`@opentelemetry/winston-transport`), correlated with the active span. `docker-compose.yml` ships a local collector + Jaeger UI (`:16686`) + Prometheus UI (`:9090`) — logs currently just land in the collector's own output (no local log backend wired up yet; swap the `logs` exporter in `docker/otel-collector-config.yaml` for Loki or similar when ready) |
+| Auth (Sisques Account) | `@sisques-labs/nestjs-kit/auth-client` (wired in `src/core/core.module.ts`), config in `src/core/config/auth.config.ts` | Verifies JWTs issued by **Sisques Account**, the platform's shared identity/tenancy service — `JwtAuthGuard`, `@CurrentUser()`, `PlatformAdminGuard`. Opt-in (`AUTH_ENABLED` + `AUTH_JWT_SECRET`), no-op until a route actually uses the guard. Never signs tokens — verification only |
 | MCP (Model Context Protocol) | `@sisques-labs/nestjs-kit/mcp` (wired in `src/core/core.module.ts`) | `POST /api/mcp`, per-request server, tool auto-discovery |
 | REST + GraphQL | `src/main.ts`, `src/core/core.module.ts` | Swagger at `/docs`, Apollo GraphQL at `/graphql` (drop whichever transport you don't need) |
 | Database | `src/database/`, TypeORM | Postgres only; migrations in `src/database/migrations/` |
@@ -53,11 +54,18 @@ every subsequent one follows (see the `architecture` skill in
 These are common enough that they shouldn't be baked into every service, but
 specific enough that they'd bias the template toward one shape:
 
-- **Auth** (JWT/OAuth/sessions) and **multi-tenancy** — add what your service
-  actually needs; the MCP module's `contextBuilder` option (see
+- **Tenant-scoped authorization** (what each role is allowed to do inside
+  *your* domain) — `@sisques-labs/nestjs-kit/rbac`'s `createTenantPermissionGuard()`
+  gives you the mechanism, but your own permission enum and
+  role→permission map are always bring-your-own per bounded context (see
+  the `architecture` skill's `infrastructure/guards/{name}.guard.ts`
+  convention). Verifying *who* the caller is (Sisques Account's JWT) is
+  already wired — see "What's included" above; only *what they can do*
+  is left to each context. The MCP module's `contextBuilder` option (see
   `McpModule.forRoot(...)` in `src/core/core.module.ts`, and `IMcpContextBuilder`
   from `@sisques-labs/nestjs-kit/mcp`) and `src/core/filters/base-exception.filter.ts`
-  both have a documented extension point for when you do.
+  both have a documented extension point for when a context needs identity
+  inside an MCP tool or a custom error shape.
 - **Bounded contexts / business domain** — this is infrastructure only.
 - **MongoDB** — `@sisques-labs/nestjs-kit/mongodb` is available if a service
   needs it alongside or instead of Postgres.
