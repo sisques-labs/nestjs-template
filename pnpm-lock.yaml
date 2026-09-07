@@ -99,7 +99,7 @@ importers:
         specifier: 17.4.2
         version: 17.4.2
       express:
-        specifier: ^5.2.1
+        specifier: 5.2.1
         version: 5.2.1(supports-color@8.1.1)
       graphql:
         specifier: ^17.0.0
@@ -154,7 +154,7 @@ importers:
         specifier: 12.0.4
         version: 12.0.4(supports-color@8.1.1)
       '@types/express':
-        specifier: ^5.0.6
+        specifier: 5.0.6
         version: 5.0.6
       '@types/node':
         specifier: 24.13.3
