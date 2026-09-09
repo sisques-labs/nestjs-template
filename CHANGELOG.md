@@ -1,6 +1,10 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.4.0] - 2026-09-04
+
+### Features
+- **core:** Wire KurrentDB domain-event forwarding (2a3db30)
 ## [0.3.0] - 2026-09-01
 
 ### Bug Fixes
@@ -62,6 +66,7 @@ All notable changes to this project will be documented in this file.
 ## [0.2.1] - 2026-08-10
 
 ### Chore
+- **deps:** Lock file maintenance (#117) (15b468c)
 - **deps:** Update dependency @sisques-labs/nestjs-kit to v1.6.1 (#127) (3427695)
 - **deps:** Update prom/prometheus docker tag to v3.13.2 (4a29541)
 - **deps:** Update pnpm to v11.21.0 (f70e7fb)
@@ -94,7 +99,6 @@ All notable changes to this project will be documented in this file.
 - **deps:** Lock file maintenance (#115) (f69e919)
 - **deps:** Update dependency lint-staged to v17.3.0 (45c4cb8)
 - **deps:** Update pnpm to v11.18.0 (8083d83)
-- **deps:** Lock file maintenance (#117) (15b468c)
 ## [0.1.12] - 2026-07-29
 
 ### Bug Fixes
@@ -184,6 +188,7 @@ All notable changes to this project will be documented in this file.
 ## [0.1.1] - 2026-07-10
 
 ### Chore
+- **deps-dev:** Bump @types/supertest from 6.0.3 to 7.2.0 (98f7a65)
 - **deps-dev:** Bump jest and @types/jest (7023af8)
 - **deps-dev:** Bump eslint-config-prettier from 9.1.2 to 10.1.8 (b94aa03)
 - **deps-dev:** Bump @nestjs/schematics from 10.2.3 to 11.1.0 (0d880d6)
@@ -191,7 +196,6 @@ All notable changes to this project will be documented in this file.
 
 ### Chore
 - First commit (19b9436)
-- **deps-dev:** Bump @types/supertest from 6.0.3 to 7.2.0 (98f7a65)
 - Rename package to sisqueslabs/nestjs-template (41f38b4)
 - **deps:** Bump @sisques-labs/nestjs-kit to 1.2.1 (5d7cc08)
 - Reset package.json version to 0.0.0 (cc5fcde)
