@@ -168,6 +168,15 @@ and `filter.field` interpolated straight into SQL with zero validation.
   README. OpenTelemetry traces/metrics are wired in `src/telemetry.ts` +
   `src/core/observability/` — every CommandBus/QueryBus dispatch is
   auto-instrumented, no per-handler wiring needed.
+- **Auth**: `JwtAuthGuard` + `@CurrentUser()` (from
+  `@sisques-labs/nestjs-kit/auth-client`, wired in `src/core/core.module.ts`)
+  verify a Sisques Account access token and populate `request.user` —
+  `@UseGuards(JwtAuthGuard)` on a REST controller or GraphQL resolver is
+  enough. For tenant-scoped authorization on top of it, build this
+  context's own `infrastructure/guards/{name}.guard.ts` with
+  `createTenantPermissionGuard()` from `@sisques-labs/nestjs-kit/rbac` —
+  that factory takes this context's own permission enum and
+  role→permission map, never a shared one.
 - `.claude/skills/architecture/assets/aggregate-template.ts.template` — aggregate starter
 - Once the first bounded context exists, add its `README.md` at
   `src/contexts/{context}/README.md` and reference it here as the canonical

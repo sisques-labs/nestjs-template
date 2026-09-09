@@ -53,6 +53,23 @@ describe('validateEnv', () => {
     expect(() => validateEnv(env)).not.toThrow();
   });
 
+  it('rejects AUTH_ENABLED=true without AUTH_JWT_SECRET', () => {
+    const env = validEnv({ AUTH_ENABLED: 'true' });
+
+    expect(() => validateEnv(env)).toThrow(
+      /AUTH_JWT_SECRET is required when AUTH_ENABLED is "true"/,
+    );
+  });
+
+  it('accepts AUTH_ENABLED=true with AUTH_JWT_SECRET set', () => {
+    const env = validEnv({
+      AUTH_ENABLED: 'true',
+      AUTH_JWT_SECRET: 'super-secret',
+    });
+
+    expect(() => validateEnv(env)).not.toThrow();
+  });
+
   it('rejects missing CORS origins in production', () => {
     const env = validEnv({ NODE_ENV: 'production' });
 

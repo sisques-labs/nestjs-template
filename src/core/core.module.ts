@@ -1,4 +1,5 @@
 import { appConfig } from '@core/config/app.config';
+import { authConfig } from '@core/config/auth.config';
 import { eventStoreConfig } from '@core/config/event-store.config';
 import { validateEnv } from '@core/config/env.validation';
 import { kafkaConfig } from '@core/config/kafka.config';
@@ -14,7 +15,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GraphQLModule } from '@nestjs/graphql';
+import { JwtModuleOptions } from '@nestjs/jwt';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { AuthClientModule } from '@sisques-labs/nestjs-kit/auth-client';
 import { EventStoreModule } from '@sisques-labs/nestjs-kit/event-store';
 import { SharedGraphQLModule } from '@sisques-labs/nestjs-kit/graphql';
 import { McpModule } from '@sisques-labs/nestjs-kit/mcp';
@@ -37,6 +40,7 @@ const CORE_MODULES = [
       otelConfig,
       kafkaConfig,
       eventStoreConfig,
+      authConfig,
     ],
     cache: true,
   }),
@@ -60,8 +64,23 @@ const CORE_MODULES = [
   MessagingModule.forRoot({ aggregateModuleMap: AGGREGATE_MODULE_MAP }),
   EventStoreModule.forRoot(),
   HealthModule,
-  // No auth yet, so the default context builder (`{ requestId }`) is used —
-  // pass `contextBuilder` here once this service resolves an identity.
+  // Verifies Sisques Account access tokens (the platform's shared
+  // identity/tenancy service) — opt-in per this service's choice: set
+  // AUTH_ENABLED=true + AUTH_JWT_SECRET to actually use `JwtAuthGuard` /
+  // `@CurrentUser()` on a route. A service that never sets those env vars
+  // boots exactly as before; this module never opens a connection or
+  // blocks anything on its own. Tenant-scoped authorization on top of the
+  // same `request.user.tenants` claim is bring-your-own per bounded
+  // context — see `@sisques-labs/nestjs-kit/rbac`.
+  AuthClientModule.forRootAsync({
+    inject: [ConfigService],
+    useFactory: (config: ConfigService): JwtModuleOptions => ({
+      secret: config.get<string>('auth.jwtSecret'),
+    }),
+  }),
+  // Pass `contextBuilder` here once a context needs the caller's identity
+  // inside an MCP tool — see `JwtAuthGuard`/`@CurrentUser()` above and
+  // `IMcpContextBuilder` from `@sisques-labs/nestjs-kit/mcp`.
   McpModule.forRoot({ name: 'nestjs-template', version: '0.1.0' }),
 ];
 
