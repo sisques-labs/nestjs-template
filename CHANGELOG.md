@@ -1,6 +1,26 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [0.5.0] - 2026-09-09
+
+### Bug Fixes
+- **deps:** Pin dependency @kurrent/kurrentdb-client to 1.3.1 (#233) (6bb3f49)
+- **deps:** Pin dependency @opentelemetry/semantic-conventions to 1.43.0 (#234) (e1e6695)
+- **deps:** Pin dependency @opentelemetry/winston-transport to 0.31.0 (#235) (e8589a8)
+- **deps:** Pin dependency @sisques-labs/nestjs-kit to v1.8.0 (#236) (89c3194)
+- **deps:** Pin dependency class-transformer to 0.5.1 (#237) (06097d6)
+- **deps:** Pin dependency class-validator to 0.15.1 (#238) (c10f872)
+- **deps:** Pin dependency dotenv to 17.4.2 (#239) (2ed3c84)
+- **deps:** Pin dependency express to 5.2.1 (#240) (d7629c6)
+- **deps:** Pin dependency graphql to 17.0.2 (#241) (05ffa6e)
+- **deps:** Pin dependency graphql-query-complexity to 2.0.0 (#242) (b9d2251)
+- **deps:** Update dependencies in pnpm-lock.yaml (f1dc642)
+
+### Chore
+- **deps:** Bump @sisques-labs/nestjs-kit to ^1.10.0 (e2b4055)
+
+### Features
+- **auth:** Wire Sisques Account JWT verification into CoreModule (45e3d4c)
 ## [0.4.0] - 2026-09-04
 
 ### Features
