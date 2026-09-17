@@ -13,6 +13,11 @@ of this repo, and the first context your new service adds defines the pattern
 every subsequent one follows (see the `architecture` skill in
 `.claude/skills/architecture/SKILL.md`).
 
+The org standard is trunk-based development: `main` is the only long-lived
+branch. Every merge to `main` triggers `trunk-ci-cd.yml` (build +
+`dev`/`pre` deploy); cutting a `prod` release is a separate, manual step via
+`release.yml`. See `sisques-labs/workflows`' README for the full model.
+
 ## Using this template for a new service
 
 1. Create the new repo from this template (GitHub "Use this template", or
@@ -46,7 +51,7 @@ every subsequent one follows (see the `architecture` skill in
 | MCP (Model Context Protocol) | `@sisques-labs/nestjs-kit/mcp` (wired in `src/core/core.module.ts`) | `POST /api/mcp`, per-request server, tool auto-discovery |
 | REST + GraphQL | `src/main.ts`, `src/core/core.module.ts` | Swagger at `/docs`, Apollo GraphQL at `/graphql` (drop whichever transport you don't need) |
 | Database | `src/database/`, TypeORM | Postgres only; migrations in `src/database/migrations/` |
-| CI/CD | `.github/workflows/` | `ci.yml` (lint+test+build+e2e+integration), `docker.yml` (PR smoke build), `release.yml` / `release-train.yml` (via `sisques-labs/workflows`) |
+| CI/CD | `.github/workflows/` | `ci.yml` (lint+test+build+e2e+integration), `docker.yml` (PR smoke build), `trunk-ci-cd.yml` (continuous build + dev/pre deploy on push to `main`), `release.yml` (manual promote to prod), `image-cleanup.yml` (weekly ephemeral tag retention) — all via `sisques-labs/workflows` |
 | Dev workflow | `AGENTS.md`, `.claude/`, `openspec/` | Architecture skill, OpenSpec propose/apply/archive skills, project conventions in `openspec/config.yaml` |
 
 ## Deliberately not included
