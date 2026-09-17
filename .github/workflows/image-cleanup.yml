@@ -1,0 +1,30 @@
+name: Image Tag Cleanup
+
+# TODO(rename-service): update image_name / ghcr_image_name below once this
+# template becomes a real service (see scripts/rename-service.sh).
+#
+# trunk-ci-cd.yml publishes a new, uniquely-tagged image (:sha-<shortsha>)
+# on every merge to main, with no branch-per-channel model to bound how many
+# accumulate. This deletes the old ones on a schedule, on both Docker Hub
+# and GHCR — see sisques-labs/workflows' README "Image Tag Cleanup" section
+# for the safety guarantees (never touches a stable release, :latest, or
+# :edge, regardless of retention_days/keep_min).
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # weekly, Monday 03:00 UTC
+  workflow_dispatch: # lets you trigger it manually too
+
+permissions:
+  packages: write
+
+jobs:
+  cleanup:
+    uses: sisques-labs/workflows/.github/workflows/image-cleanup.yml@main
+    with:
+      image_name: sisqueslabs/nestjs-template
+      ghcr_image_name: ghcr.io/sisques-labs/nestjs-template
+      push_ghcr: true
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
