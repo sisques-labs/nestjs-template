@@ -46,10 +46,10 @@ importers:
         version: 11.4.6(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)
       '@nestjs/terminus':
         specifier: 11.1.1
-        version: 11.1.1(@grpc/grpc-js@1.14.4)(@grpc/proto-loader@0.8.1)(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(@nestjs/typeorm@11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))))(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))
+        version: 11.1.1(@grpc/grpc-js@1.14.4)(@grpc/proto-loader@0.8.1)(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(@nestjs/typeorm@11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))))(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))
       '@nestjs/typeorm':
         specifier: 11.0.3
-        version: 11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))
+        version: 11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))
       '@opentelemetry/api':
         specifier: 1.9.1
         version: 1.9.1
@@ -91,7 +91,7 @@ importers:
         version: 0.31.0
       '@sisques-labs/nestjs-kit':
         specifier: 1.10.0
-        version: 1.10.0(c4a4e52342e74d3c83c9c8e4c405bcf5)
+        version: 1.10.0(9e08a7a015313f073f85f9381e14386c)
       class-transformer:
         specifier: 0.5.1
         version: 0.5.1
@@ -120,8 +120,8 @@ importers:
         specifier: 1.10.2
         version: 1.10.2(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(winston@3.19.0)
       pg:
-        specifier: 8.22.0
-        version: 8.22.0
+        specifier: 8.23.0
+        version: 8.23.0
       reflect-metadata:
         specifier: 0.2.0
         version: 0.2.0
@@ -130,7 +130,7 @@ importers:
         version: 7.8.1
       typeorm:
         specifier: 1.1.0
-        version: 1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))
+        version: 1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))
       winston:
         specifier: 3.19.0
         version: 3.19.0
@@ -4096,12 +4096,15 @@ packages:
   pg-protocol@1.15.0:
     resolution: {integrity: sha512-cq9sECI5s0+uPUXjbz8ioyPJni6RzsRib0US67i5IoTZKw8fNeYlVE7u8F4dG7vEJJtc5wdD1K189lCCUwqWTQ==}
 
+  pg-protocol@1.16.0:
+    resolution: {integrity: sha512-sILXutLVjCLjcDuOmvhX5e2Z4cS5qG/6Bu3VkpFwdf/633ElGLpEh9bgmuI5I4sqKqkifQiGyiCcx1HdtrK7tg==}
+
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
-  pg@8.22.0:
-    resolution: {integrity: sha512-8wih1vVIBMxoUM2oB4soJsD9tDnDpLv4OXBJ+EJzFsvycD+lfyIreC2gGHq78f8jbLLt+bvlPTFdFZfJkOuzAA==}
+  pg@8.23.0:
+    resolution: {integrity: sha512-Ip2EQCngowJLGOfCwkFhPXU7/ljlhn6Rxlmy4XYfL2Y+vyRM59+8uR2xqRWKdYmbXmxCFOAmKxBuSUCdF34qLg==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -5997,7 +6000,7 @@ snapshots:
       class-transformer: 0.5.1
       class-validator: 0.15.1
 
-  '@nestjs/terminus@11.1.1(@grpc/grpc-js@1.14.4)(@grpc/proto-loader@0.8.1)(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(@nestjs/typeorm@11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))))(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))':
+  '@nestjs/terminus@11.1.1(@grpc/grpc-js@1.14.4)(@grpc/proto-loader@0.8.1)(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(@nestjs/typeorm@11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))))(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))':
     dependencies:
       '@nestjs/common': 11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1)
       '@nestjs/core': 11.1.28(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)
@@ -6008,8 +6011,8 @@ snapshots:
     optionalDependencies:
       '@grpc/grpc-js': 1.14.4
       '@grpc/proto-loader': 0.8.1
-      '@nestjs/typeorm': 11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))
-      typeorm: 1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))
+      '@nestjs/typeorm': 11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))
+      typeorm: 1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))
 
   '@nestjs/testing@11.2.5(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(@nestjs/platform-express@11.1.28)':
     dependencies:
@@ -6019,13 +6022,13 @@ snapshots:
     optionalDependencies:
       '@nestjs/platform-express': 11.1.28(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(supports-color@8.1.1)
 
-  '@nestjs/typeorm@11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))':
+  '@nestjs/typeorm@11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))':
     dependencies:
       '@nestjs/common': 11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1)
       '@nestjs/core': 11.1.28(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)
       reflect-metadata: 0.2.0
       rxjs: 7.8.1
-      typeorm: 1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))
+      typeorm: 1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))
 
   '@noble/hashes@1.8.0': {}
 
@@ -6814,7 +6817,7 @@ snapshots:
 
   '@scarf/scarf@1.4.0': {}
 
-  '@sisques-labs/nestjs-kit@1.10.0(c4a4e52342e74d3c83c9c8e4c405bcf5)':
+  '@sisques-labs/nestjs-kit@1.10.0(9e08a7a015313f073f85f9381e14386c)':
     dependencies:
       '@nestjs/common': 11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1)
       '@nestjs/core': 11.1.28(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)
@@ -6834,13 +6837,13 @@ snapshots:
       '@nestjs/config': 4.0.4(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(rxjs@7.8.1)
       '@nestjs/graphql': 13.4.2(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(class-transformer@0.5.1)(class-validator@0.15.1)(graphql@17.0.2)(reflect-metadata@0.2.0)
       '@nestjs/jwt': 11.0.2(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))
-      '@nestjs/typeorm': 11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))
+      '@nestjs/typeorm': 11.0.3(@nestjs/common@11.2.5(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(reflect-metadata@0.2.0)(rxjs@7.8.1)(typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)))
       express: 5.2.1(supports-color@8.1.1)
       graphql: 17.0.2
       graphql-query-complexity: 2.0.0(graphql@17.0.2)
       graphql-type-json: 0.3.2(graphql@17.0.2)
       kafkajs: 2.2.4
-      typeorm: 1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))
+      typeorm: 1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3))
       zod: 4.4.3
 
   '@so-ric/colorspace@1.1.6':
@@ -9241,11 +9244,13 @@ snapshots:
 
   pg-int8@1.0.1: {}
 
-  pg-pool@3.14.0(pg@8.22.0):
+  pg-pool@3.14.0(pg@8.23.0):
     dependencies:
-      pg: 8.22.0
+      pg: 8.23.0
 
   pg-protocol@1.15.0: {}
+
+  pg-protocol@1.16.0: {}
 
   pg-types@2.2.0:
     dependencies:
@@ -9255,11 +9260,11 @@ snapshots:
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
 
-  pg@8.22.0:
+  pg@8.23.0:
     dependencies:
       pg-connection-string: 2.14.0
-      pg-pool: 3.14.0(pg@8.22.0)
-      pg-protocol: 1.15.0
+      pg-pool: 3.14.0(pg@8.23.0)
+      pg-protocol: 1.16.0
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
@@ -9994,7 +9999,7 @@ snapshots:
 
   typedarray@0.0.6: {}
 
-  typeorm@1.1.0(pg@8.22.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)):
+  typeorm@1.1.0(pg@8.23.0)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)):
     dependencies:
       '@sqltools/formatter': 1.2.5
       ansis: 4.3.1
@@ -10007,7 +10012,7 @@ snapshots:
       tslib: 2.8.1
       yargs: 18.1.0
     optionalDependencies:
-      pg: 8.22.0
+      pg: 8.23.0
       ts-node: 10.9.2(@swc/core@1.16.1)(@types/node@24.13.5)(typescript@6.0.3)
     transitivePeerDependencies:
       - babel-plugin-macros
